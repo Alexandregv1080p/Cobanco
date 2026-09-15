@@ -97,6 +97,27 @@ class TransacaoIntegracaoTest {
                 .andExpect(jsonPath("$.cetAnual").isNumber());
     }
 
+    @Test
+    void simularInvestimento_cdb_aplicaIRRegressivo() throws Exception {
+        // CDB 1000, 1%/mes, 12 meses -> dias 360 -> IR 20%
+        mvc.perform(post("/investimentos/simular").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"tipo\":\"CDB\",\"valor\":1000.00,\"taxaMensal\":0.01,\"meses\":12}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.aliquotaIR").value(0.2))
+                .andExpect(jsonPath("$.ir").value(25.37))
+                .andExpect(jsonPath("$.valorFinalLiquido").value(1101.47))
+                .andExpect(jsonPath("$.evolucao.length()").value(12));
+    }
+
+    @Test
+    void simularInvestimento_poupanca_isentaDeIR() throws Exception {
+        mvc.perform(post("/investimentos/simular").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"tipo\":\"POUPANCA\",\"valor\":1000.00,\"taxaMensal\":0.01,\"meses\":12}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.aliquotaIR").value(0.0))
+                .andExpect(jsonPath("$.ir").value(0.00));
+    }
+
     // --- helpers ---
 
     private long criarCliente(String nome, String cpf) throws Exception {
@@ -124,6 +145,7 @@ class TransacaoIntegracaoTest {
         Path out = Files.createTempDirectory("cobol-bin");
         compilar("../cobol/src/amortizacao.cob", out.resolve("amortizacao"));
         compilar("../cobol/src/transacoes.cob", out.resolve("transacoes"));
+        compilar("../cobol/src/investimento.cob", out.resolve("investimento"));
         return out;
     }
 

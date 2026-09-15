@@ -18,7 +18,8 @@ RUN apt-get update \
 # Compila o nucleo COBOL para a PATH.
 COPY cobol/src /opt/cobol/src
 RUN cobc -x -free -o /usr/local/bin/amortizacao /opt/cobol/src/amortizacao.cob \
- && cobc -x -free -o /usr/local/bin/transacoes  /opt/cobol/src/transacoes.cob
+ && cobc -x -free -o /usr/local/bin/transacoes  /opt/cobol/src/transacoes.cob \
+ && cobc -x -free -o /usr/local/bin/investimento /opt/cobol/src/investimento.cob
 
 COPY --from=build /build/target/*.jar /app/app.jar
 WORKDIR /app

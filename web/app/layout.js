@@ -13,7 +13,8 @@ export default function RootLayout({ children }) {
         <nav className="nav">
           <span className="brand">🏦 Core Bancário</span>
           <Link href="/">Contas</Link>
-          <Link href="/emprestimos">Simulador de Empréstimo</Link>
+          <Link href="/emprestimos">Empréstimo</Link>
+          <Link href="/investimentos">Investimento</Link>
           <span className="muted" style={{ marginLeft: "auto" }}>
             núcleo COBOL · API Spring · Postgres
           </span>

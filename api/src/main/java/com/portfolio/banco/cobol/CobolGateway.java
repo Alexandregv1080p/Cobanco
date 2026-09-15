@@ -59,6 +59,29 @@ public class CobolGateway {
         return new ResultadoSimulacao(totalJuros, totalIOF, cetMensal, cetAnual, totalPago, parcelas);
     }
 
+    // ---- Investimento: CDB/Poupanca + IR regressivo ----
+    public ResultadoInvestimento simularInvestimento(String tipo, BigDecimal valor,
+                                                     BigDecimal taxaMensal, int meses) {
+        String entrada = String.join(";",
+                tipo.toUpperCase(), plain(valor), plain(taxaMensal), String.valueOf(meses));
+
+        List<String> saida = executar("investimento", entrada);
+
+        // 1a linha: RESUMO;vfBruto;rendBruto;aliquotaIR;ir;rendLiquido;vfLiquido
+        String[] r = saida.get(0).split(";");
+        ResultadoInvestimento res = new ResultadoInvestimento(
+                new BigDecimal(r[1]), new BigDecimal(r[2]), new BigDecimal(r[3]),
+                new BigDecimal(r[4]), new BigDecimal(r[5]), new BigDecimal(r[6]),
+                new ArrayList<>());
+
+        for (String linha : saida.subList(1, saida.size())) {
+            String[] f = linha.split(";");
+            res.evolucao().add(new PontoInvestimento(
+                    Integer.parseInt(f[0]), new BigDecimal(f[1]), new BigDecimal(f[2])));
+        }
+        return res;
+    }
+
     // ---- Transacoes ----
     public BigDecimal deposito(BigDecimal saldo, BigDecimal valor) {
         return umSaldo(executar("transacoes",

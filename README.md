@@ -9,9 +9,10 @@ persistência e interface.
 
 > **O COBOL não é decorativo.** Ele é o dono das regras de negócio e dos cálculos:
 > processa transações (depósito/saque/transferência) com validação de saldo e
-> limite, e gera as tabelas de amortização de empréstimo (Price, SAC e Americano)
-> junto com os **custos regulatórios brasileiros** — IOF e CET (este resolvido por
-> bisseção dentro do COBOL). A API orquestra; o COBOL decide e calcula.
+> limite, gera as tabelas de amortização de empréstimo (Price, SAC e Americano)
+> com os **custos regulatórios brasileiros** — IOF e CET (este resolvido por
+> bisseção dentro do COBOL) — e simula investimentos (CDB/Poupança) com **IR
+> regressivo**. A API orquestra; o COBOL decide e calcula.
 
 ---
 
@@ -102,7 +103,8 @@ core-bancario-cobol/
 ├── cobol/                     # Núcleo: regras e cálculos financeiros
 │   ├── src/
 │   │   ├── amortizacao.cob    # tabela Price/SAC/Americano + IOF + CET
-│   │   └── transacoes.cob     # depósito / saque / transferência
+│   │   ├── transacoes.cob     # depósito / saque / transferência
+│   │   └── investimento.cob   # CDB/Poupança: juros compostos + IR regressivo
 │   ├── tests/                 # baterias de teste por invariantes
 │   └── Dockerfile             # imagem só-COBOL (roda os testes isolados)
 ├── api/                       # API de orquestração (Spring Boot)
@@ -128,7 +130,8 @@ core-bancario-cobol/
 | `GET`  | `/contas` · `/contas/{id}` · `/contas/{id}/saldo` | consulta |
 | `POST` | `/contas/{id}/deposito` · `/saque` · `/transferencia` | **aciona o COBOL** |
 | `GET`  | `/contas/{id}/extrato` | histórico |
-| `POST` | `/emprestimos/simular` | tabela Price/SAC — **aciona o COBOL** |
+| `POST` | `/emprestimos/simular` | tabela Price/SAC/Americano + IOF + CET — **aciona o COBOL** |
+| `POST` | `/investimentos/simular` | CDB/Poupança: juros compostos + IR regressivo — **aciona o COBOL** |
 
 Exemplos:
 
@@ -168,6 +171,9 @@ curl -X POST localhost:8080/emprestimos/simular -H 'Content-Type: application/js
   ≤ 365) e **CET** — a taxa efetiva é achada por **bisseção** sobre o fluxo de
   parcelas, um cálculo numérico iterativo rodando no núcleo COBOL. (Dias por mês =
   30, sem data de início; refinável com calendário real.)
+- **IR regressivo no COBOL.** O simulador de investimento capitaliza juros compostos
+  (crédito mensal arredondado) e aplica a tabela regressiva de IR por prazo
+  (22,5% → 15%); a Poupança entra como isenta, evidenciando o contraste tributário.
 
 ---
 
@@ -194,5 +200,5 @@ cd api && mvn test
 
 ## Fora de escopo (MVP enxuto)
 
-Múltiplas moedas/câmbio, investimentos, autenticação robusta (login simples basta)
-e app mobile. A arquitetura deixa espaço para todos eles sem reescrita.
+Múltiplas moedas/câmbio, autenticação robusta (login simples basta) e app mobile.
+A arquitetura deixa espaço para todos eles sem reescrita.
