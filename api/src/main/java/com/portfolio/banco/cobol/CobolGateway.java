@@ -32,20 +32,31 @@ public class CobolGateway {
         this.binDir = binDir;
     }
 
-    // ---- Emprestimo: tabela de amortizacao (Price/SAC) ----
-    public List<Parcela> amortizar(BigDecimal valor, BigDecimal taxaMensal, int prazo, String sistema) {
+    // ---- Emprestimo: tabela de amortizacao (Price/SAC/Americano) + custos ----
+    public ResultadoSimulacao amortizar(BigDecimal valor, BigDecimal taxaMensal, int prazo, String sistema) {
         String entrada = String.join(";",
                 plain(valor), plain(taxaMensal), String.valueOf(prazo), sistema.toUpperCase());
 
+        List<String> saida = executar("amortizacao", entrada);
+
+        // 1a linha: RESUMO;totalJuros;totalIOF;cetMensal;cetAnual;totalPago
+        String[] r = saida.get(0).split(";");
+        BigDecimal totalJuros = new BigDecimal(r[1]);
+        BigDecimal totalIOF = new BigDecimal(r[2]);
+        BigDecimal cetMensal = new BigDecimal(r[3]);
+        BigDecimal cetAnual = new BigDecimal(r[4]);
+        BigDecimal totalPago = new BigDecimal(r[5]);
+
+        // demais linhas: as parcelas
         List<Parcela> parcelas = new ArrayList<>();
-        for (String linha : executar("amortizacao", entrada)) {
+        for (String linha : saida.subList(1, saida.size())) {
             String[] f = linha.split(";");
             parcelas.add(new Parcela(
                     Integer.parseInt(f[0]),
                     new BigDecimal(f[1]), new BigDecimal(f[2]),
                     new BigDecimal(f[3]), new BigDecimal(f[4])));
         }
-        return parcelas;
+        return new ResultadoSimulacao(totalJuros, totalIOF, cetMensal, cetAnual, totalPago, parcelas);
     }
 
     // ---- Transacoes ----

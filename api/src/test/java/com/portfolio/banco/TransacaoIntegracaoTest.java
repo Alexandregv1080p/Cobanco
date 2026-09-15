@@ -90,7 +90,11 @@ class TransacaoIntegracaoTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.parcelas.length()").value(12))
                 .andExpect(jsonPath("$.parcelas[0].juros").value(1500.00))
-                .andExpect(jsonPath("$.parcelas[11].saldoDevedor").value(0.00));
+                .andExpect(jsonPath("$.parcelas[11].saldoDevedor").value(0.00))
+                // custos regulatorios calculados no COBOL
+                .andExpect(jsonPath("$.totalIOF").isNumber())
+                .andExpect(jsonPath("$.cetMensal").isNumber())
+                .andExpect(jsonPath("$.cetAnual").isNumber());
     }
 
     // --- helpers ---

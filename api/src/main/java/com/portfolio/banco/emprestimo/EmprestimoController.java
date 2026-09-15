@@ -2,6 +2,7 @@ package com.portfolio.banco.emprestimo;
 
 import com.portfolio.banco.cobol.CobolGateway;
 import com.portfolio.banco.cobol.Parcela;
+import com.portfolio.banco.cobol.ResultadoSimulacao;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.web.bind.annotation.*;
@@ -9,7 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
-/** Simulador de emprestimo: delega o calculo da tabela (Price/SAC) ao COBOL. Nao persiste. */
+/**
+ * Simulador de emprestimo: delega ao COBOL o calculo da tabela (Price/SAC/
+ * Americano) e dos custos regulatorios (IOF e CET). Nao persiste.
+ */
 @RestController
 @RequestMapping("/emprestimos")
 public class EmprestimoController {
@@ -22,17 +26,13 @@ public class EmprestimoController {
 
     @PostMapping("/simular")
     public SimulacaoResponse simular(@Valid @RequestBody SimularRequest req) {
-        List<Parcela> parcelas = cobol.amortizar(
+        ResultadoSimulacao r = cobol.amortizar(
                 req.valor(), req.taxaMensal(), req.prazoMeses(), req.sistema());
-
-        BigDecimal totalJuros = parcelas.stream()
-                .map(Parcela::juros).reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal totalPago = parcelas.stream()
-                .map(Parcela::parcela).reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new SimulacaoResponse(
                 req.sistema().toUpperCase(), req.valor(), req.prazoMeses(),
-                totalJuros, totalPago, parcelas);
+                r.totalJuros(), r.totalIOF(), r.cetMensal(), r.cetAnual(),
+                r.totalPago(), r.parcelas());
     }
 
     // --- DTOs ---
@@ -40,9 +40,12 @@ public class EmprestimoController {
             @NotNull @DecimalMin(value = "0.01") BigDecimal valor,
             @NotNull @DecimalMin(value = "0.0") BigDecimal taxaMensal,
             @NotNull @Min(1) Integer prazoMeses,
-            @NotBlank @Pattern(regexp = "(?i)PRICE|SAC", message = "use PRICE ou SAC") String sistema) {}
+            @NotBlank @Pattern(regexp = "(?i)PRICE|SAC|AMERICANO",
+                    message = "use PRICE, SAC ou AMERICANO") String sistema) {}
 
     public record SimulacaoResponse(
             String sistema, BigDecimal valor, int prazoMeses,
-            BigDecimal totalJuros, BigDecimal totalPago, List<Parcela> parcelas) {}
+            BigDecimal totalJuros, BigDecimal totalIOF,
+            BigDecimal cetMensal, BigDecimal cetAnual,
+            BigDecimal totalPago, List<Parcela> parcelas) {}
 }

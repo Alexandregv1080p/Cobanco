@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { api, brl } from "../../lib/api";
 
+const pct = (v) =>
+  (Number(v) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 }) + "%";
+
 export default function EmprestimosPage() {
   const [form, setForm] = useState({ valor: "100000", taxaMensal: "0.015", prazoMeses: "12", sistema: "PRICE" });
   const [resultado, setResultado] = useState(null);
@@ -32,7 +35,7 @@ export default function EmprestimosPage() {
   return (
     <>
       <h1>Simulador de Empréstimo</h1>
-      <p className="muted">O cálculo da tabela (Price/SAC) é feito pelo núcleo COBOL.</p>
+      <p className="muted">A tabela (Price/SAC/Americano) e os custos (IOF, CET) são calculados pelo núcleo COBOL.</p>
 
       <div className="card">
         <form onSubmit={simular}>
@@ -56,6 +59,7 @@ export default function EmprestimosPage() {
               <select value={form.sistema} onChange={(e) => setForm({ ...form, sistema: e.target.value })}>
                 <option value="PRICE">PRICE (parcela fixa)</option>
                 <option value="SAC">SAC (amortização fixa)</option>
+                <option value="AMERICANO">AMERICANO (só juros; principal no fim)</option>
               </select>
             </div>
           </div>
@@ -71,7 +75,12 @@ export default function EmprestimosPage() {
           </h2>
           <div className="row">
             <div className="muted">Total de juros: <strong>{brl(resultado.totalJuros)}</strong></div>
+            <div className="muted">IOF: <strong>{brl(resultado.totalIOF)}</strong></div>
             <div className="muted">Total pago: <strong>{brl(resultado.totalPago)}</strong></div>
+          </div>
+          <div className="row">
+            <div className="muted">CET mensal: <strong>{pct(resultado.cetMensal)}</strong></div>
+            <div className="muted">CET anual: <strong>{pct(resultado.cetAnual)}</strong></div>
           </div>
           <table>
             <thead>

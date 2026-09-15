@@ -9,8 +9,9 @@ persistência e interface.
 
 > **O COBOL não é decorativo.** Ele é o dono das regras de negócio e dos cálculos:
 > processa transações (depósito/saque/transferência) com validação de saldo e
-> limite, e gera as tabelas de amortização de empréstimo (Price e SAC). A API
-> orquestra; o COBOL decide e calcula.
+> limite, e gera as tabelas de amortização de empréstimo (Price, SAC e Americano)
+> junto com os **custos regulatórios brasileiros** — IOF e CET (este resolvido por
+> bisseção dentro do COBOL). A API orquestra; o COBOL decide e calcula.
 
 ---
 
@@ -100,7 +101,7 @@ Parar: `docker compose down` (mantém os dados). Zerar o banco: `docker compose 
 core-bancario-cobol/
 ├── cobol/                     # Núcleo: regras e cálculos financeiros
 │   ├── src/
-│   │   ├── amortizacao.cob    # tabela Price / SAC
+│   │   ├── amortizacao.cob    # tabela Price/SAC/Americano + IOF + CET
 │   │   └── transacoes.cob     # depósito / saque / transferência
 │   ├── tests/                 # baterias de teste por invariantes
 │   └── Dockerfile             # imagem só-COBOL (roda os testes isolados)
@@ -163,6 +164,10 @@ curl -X POST localhost:8080/emprestimos/simular -H 'Content-Type: application/js
   (`valor > 0`, `limite >= 0`) como última rede de segurança.
 - **Fechamento de arredondamento.** Na última parcela do empréstimo a amortização
   absorve o resíduo, zerando o saldo devedor em `0.00` exato (prática bancária real).
+- **Custos regulatórios no COBOL.** IOF (adicional 0,38% + diário 0,0082%/dia, dias
+  ≤ 365) e **CET** — a taxa efetiva é achada por **bisseção** sobre o fluxo de
+  parcelas, um cálculo numérico iterativo rodando no núcleo COBOL. (Dias por mês =
+  30, sem data de início; refinável com calendário real.)
 
 ---
 
