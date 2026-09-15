@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/banco}
+    username: ${DB_USER:banco}
+    password: ${DB_PASSWORD:banco}
+  jpa:
+    hibernate:
+      ddl-auto: validate   # o schema e dono do Flyway; o JPA so valida
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+
+# Caminho do executavel COBOL (usado a partir da Fase 4)
+cobol:
+  bin-dir: ${COBOL_BIN_DIR:/usr/local/bin}
+
+server:
+  port: 8080

@@ -1,0 +1,96 @@
+"use client";
+
+import { useState } from "react";
+import { api, brl } from "../../lib/api";
+
+export default function EmprestimosPage() {
+  const [form, setForm] = useState({ valor: "100000", taxaMensal: "0.015", prazoMeses: "12", sistema: "PRICE" });
+  const [resultado, setResultado] = useState(null);
+  const [erro, setErro] = useState("");
+  const [carregando, setCarregando] = useState(false);
+
+  async function simular(e) {
+    e.preventDefault();
+    setErro("");
+    setResultado(null);
+    setCarregando(true);
+    try {
+      const r = await api.simular({
+        valor: Number(form.valor),
+        taxaMensal: Number(form.taxaMensal),
+        prazoMeses: Number(form.prazoMeses),
+        sistema: form.sistema,
+      });
+      setResultado(r);
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  return (
+    <>
+      <h1>Simulador de Empréstimo</h1>
+      <p className="muted">O cálculo da tabela (Price/SAC) é feito pelo núcleo COBOL.</p>
+
+      <div className="card">
+        <form onSubmit={simular}>
+          <div className="row">
+            <div>
+              <label>Valor do empréstimo</label>
+              <input type="number" step="0.01" value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} required />
+            </div>
+            <div>
+              <label>Taxa mensal (fração, ex.: 0.015 = 1,5%)</label>
+              <input type="number" step="0.0001" value={form.taxaMensal} onChange={(e) => setForm({ ...form, taxaMensal: e.target.value })} required />
+            </div>
+          </div>
+          <div className="row">
+            <div>
+              <label>Prazo (meses)</label>
+              <input type="number" min="1" value={form.prazoMeses} onChange={(e) => setForm({ ...form, prazoMeses: e.target.value })} required />
+            </div>
+            <div>
+              <label>Sistema</label>
+              <select value={form.sistema} onChange={(e) => setForm({ ...form, sistema: e.target.value })}>
+                <option value="PRICE">PRICE (parcela fixa)</option>
+                <option value="SAC">SAC (amortização fixa)</option>
+              </select>
+            </div>
+          </div>
+          <button disabled={carregando}>{carregando ? "Calculando…" : "Simular"}</button>
+          {erro && <div className="erro">{erro}</div>}
+        </form>
+      </div>
+
+      {resultado && (
+        <div className="card">
+          <h2>
+            {resultado.sistema} · {resultado.prazoMeses}x <span className="muted">de {brl(resultado.valor)}</span>
+          </h2>
+          <div className="row">
+            <div className="muted">Total de juros: <strong>{brl(resultado.totalJuros)}</strong></div>
+            <div className="muted">Total pago: <strong>{brl(resultado.totalPago)}</strong></div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Nº</th><th>Parcela</th><th>Juros</th><th>Amortização</th><th>Saldo devedor</th></tr>
+            </thead>
+            <tbody>
+              {resultado.parcelas.map((p) => (
+                <tr key={p.numero}>
+                  <td>{p.numero}</td>
+                  <td>{brl(p.parcela)}</td>
+                  <td>{brl(p.juros)}</td>
+                  <td>{brl(p.amortizacao)}</td>
+                  <td>{brl(p.saldoDevedor)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  );
+}

@@ -1,0 +1,16 @@
+# Java / Maven
+api/target/
+
+# Node / Next
+web/node_modules/
+web/.next/
+
+# COBOL binaries (compilados no build)
+cobol/**/*.o
+*.so
+
+# IDE / SO
+.idea/
+.vscode/
+*.iml
+.DS_Store

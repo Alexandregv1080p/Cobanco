@@ -1,0 +1,52 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+a { color: #38bdf8; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.nav {
+  display: flex; gap: 20px; align-items: center;
+  padding: 16px 24px; background: #1e293b; border-bottom: 1px solid #334155;
+}
+.nav .brand { font-weight: 700; color: #f8fafc; }
+
+.container { max-width: 960px; margin: 0 auto; padding: 24px; }
+
+.card {
+  background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+  padding: 20px; margin-bottom: 20px;
+}
+.card h2 { margin-top: 0; }
+
+h1 { color: #f8fafc; }
+.muted { color: #94a3b8; font-size: 0.9em; }
+
+label { display: block; font-size: 0.85em; margin: 8px 0 4px; color: #cbd5e1; }
+input, select {
+  width: 100%; padding: 8px 10px; border-radius: 6px;
+  border: 1px solid #475569; background: #0f172a; color: #e2e8f0;
+}
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.row > * { flex: 1; min-width: 120px; }
+
+button {
+  margin-top: 12px; padding: 9px 16px; border: none; border-radius: 6px;
+  background: #2563eb; color: white; font-weight: 600; cursor: pointer;
+}
+button:hover { background: #1d4ed8; }
+button:disabled { background: #475569; cursor: not-allowed; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #334155; }
+th:first-child, td:first-child { text-align: left; }
+th { color: #94a3b8; font-size: 0.8em; text-transform: uppercase; }
+
+.saldo { font-size: 2em; font-weight: 700; color: #4ade80; }
+.saldo.negativo { color: #f87171; }
+.erro { color: #fca5a5; margin-top: 10px; }
+.ok { color: #4ade80; margin-top: 10px; }
+.tag { font-size: 0.75em; padding: 2px 8px; border-radius: 999px; background: #334155; }

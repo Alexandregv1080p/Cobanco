@@ -1,0 +1,41 @@
+# Sobe DB + API. Fase 6 estende com o build do COBOL e o front.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: banco
+      POSTGRES_USER: banco
+      POSTGRES_PASSWORD: banco
+    ports:
+      - "5433:5432"   # 5432 costuma estar ocupado no host; internamente a API usa db:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U banco -d banco"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/banco
+      DB_USER: banco
+      DB_PASSWORD: banco
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./web
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
