@@ -26,6 +26,8 @@ export const api = {
     req(`/contas/${id}/transferencia`, { method: "POST", body: JSON.stringify({ contaDestinoId, valor }) }),
   simular: (body) => req("/emprestimos/simular", { method: "POST", body: JSON.stringify(body) }),
   simularInvestimento: (body) => req("/investimentos/simular", { method: "POST", body: JSON.stringify(body) }),
+  razao: (id) => req(`/contas/${id}/razao`),
+  balancete: () => req("/razao/balancete"),
 };
 
 export function brl(v) {

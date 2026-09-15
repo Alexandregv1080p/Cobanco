@@ -110,6 +110,28 @@ class TransacaoIntegracaoTest {
     }
 
     @Test
+    void razao_partidasDobradas_equilibrado() throws Exception {
+        long clienteId = criarCliente("Razao", "raz-1");
+        long contaId = criarConta(clienteId, "RAZ-1", "0.00");
+
+        mvc.perform(post("/contas/" + contaId + "/deposito")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"valor\":500.00}"))
+                .andExpect(status().isOk());
+
+        // Razão da conta: 1 lançamento (o crédito); a perna de débito fica no CAIXA.
+        mvc.perform(get("/contas/" + contaId + "/razao"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].natureza").value("C"))
+                .andExpect(jsonPath("$[0].valor").value(500.00));
+
+        // Balancete sempre fecha: total débitos = total créditos.
+        mvc.perform(get("/razao/balancete"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.equilibrado").value(true));
+    }
+
+    @Test
     void simularInvestimento_poupanca_isentaDeIR() throws Exception {
         mvc.perform(post("/investimentos/simular").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"tipo\":\"POUPANCA\",\"valor\":1000.00,\"taxaMensal\":0.01,\"meses\":12}"))

@@ -9,6 +9,7 @@ export default function ContaDetalhePage() {
   const [conta, setConta] = useState(null);
   const [outras, setOutras] = useState([]);
   const [extrato, setExtrato] = useState([]);
+  const [razao, setRazao] = useState([]);
   const [msg, setMsg] = useState(null); // {tipo:'ok'|'erro', texto}
 
   const [dep, setDep] = useState("");
@@ -17,10 +18,13 @@ export default function ContaDetalhePage() {
 
   async function recarregar() {
     try {
-      const [c, todas, ext] = await Promise.all([api.conta(id), api.listarContas(), api.extrato(id)]);
+      const [c, todas, ext, raz] = await Promise.all([
+        api.conta(id), api.listarContas(), api.extrato(id), api.razao(id),
+      ]);
       setConta(c);
       setOutras(todas.filter((x) => String(x.id) !== String(id)));
       setExtrato(ext);
+      setRazao(raz);
     } catch (e) {
       setMsg({ tipo: "erro", texto: e.message });
     }
@@ -120,6 +124,30 @@ export default function ContaDetalhePage() {
                   <td><span className="tag">{t.tipo}</span></td>
                   <td>{brl(t.valor)}</td>
                   <td>{brl(t.saldoApos)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div className="card">
+        <h2>Razão contábil <span className="muted" style={{ fontSize: "0.6em" }}>(partidas dobradas)</span></h2>
+        {razao.length === 0 ? (
+          <p className="muted">Sem lançamentos.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr><th>Data</th><th>Lote</th><th>D/C</th><th>Histórico</th><th>Valor</th></tr>
+            </thead>
+            <tbody>
+              {razao.map((l) => (
+                <tr key={l.id}>
+                  <td>{new Date(l.data).toLocaleString("pt-BR")}</td>
+                  <td>{l.lote}</td>
+                  <td><span className="tag">{l.natureza === "D" ? "Débito" : "Crédito"}</span></td>
+                  <td>{l.historico}</td>
+                  <td>{brl(l.valor)}</td>
                 </tr>
               ))}
             </tbody>

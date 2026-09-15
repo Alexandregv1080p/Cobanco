@@ -6,6 +6,7 @@ import com.portfolio.banco.common.NotFoundException;
 import com.portfolio.banco.common.RegraNegocioException;
 import com.portfolio.banco.conta.Conta;
 import com.portfolio.banco.conta.ContaRepository;
+import com.portfolio.banco.razao.RazaoService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,11 +23,14 @@ public class TransacaoService {
     private final ContaRepository contaRepo;
     private final TransacaoRepository txRepo;
     private final CobolGateway cobol;
+    private final RazaoService razao;
 
-    public TransacaoService(ContaRepository contaRepo, TransacaoRepository txRepo, CobolGateway cobol) {
+    public TransacaoService(ContaRepository contaRepo, TransacaoRepository txRepo,
+                            CobolGateway cobol, RazaoService razao) {
         this.contaRepo = contaRepo;
         this.txRepo = txRepo;
         this.cobol = cobol;
+        this.razao = razao;
     }
 
     @Transactional
@@ -35,6 +39,7 @@ public class TransacaoService {
         BigDecimal novo = cobol.deposito(c.getSaldo(), valor);
         c.setSaldo(novo);
         registrar(contaId, null, "DEPOSITO", valor, novo);
+        razao.deposito(contaId, valor);
         return novo;
     }
 
@@ -45,6 +50,7 @@ public class TransacaoService {
         BigDecimal novo = cobol.saque(c.getSaldo(), valor, c.getLimite());
         c.setSaldo(novo);
         registrar(contaId, null, "SAQUE", valor, novo);
+        razao.saque(contaId, valor);
         return novo;
     }
 
@@ -71,6 +77,7 @@ public class TransacaoService {
         // Uma linha de extrato em cada conta.
         registrar(origemId, destinoId, "TRANSFERENCIA", valor, r.novoSaldoOrigem());
         registrar(destinoId, origemId, "TRANSFERENCIA", valor, r.novoSaldoDestino());
+        razao.transferencia(origemId, destinoId, valor);
         return r;
     }
 

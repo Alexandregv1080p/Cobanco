@@ -130,6 +130,8 @@ core-bancario-cobol/
 | `GET`  | `/contas` · `/contas/{id}` · `/contas/{id}/saldo` | consulta |
 | `POST` | `/contas/{id}/deposito` · `/saque` · `/transferencia` | **aciona o COBOL** |
 | `GET`  | `/contas/{id}/extrato` | histórico |
+| `GET`  | `/contas/{id}/razao` | livro razão da conta (partidas dobradas) |
+| `GET`  | `/razao/balancete` | balancete: prova que débitos = créditos |
 | `POST` | `/emprestimos/simular` | tabela Price/SAC/Americano + IOF + CET — **aciona o COBOL** |
 | `POST` | `/investimentos/simular` | CDB/Poupança: juros compostos + IR regressivo — **aciona o COBOL** |
 
@@ -165,6 +167,11 @@ curl -X POST localhost:8080/emprestimos/simular -H 'Content-Type: application/js
 - **Validação em camadas.** Bean Validation na entrada (HTTP 400), regra de negócio
   no COBOL propagada como HTTP 422, e **constraints no próprio banco**
   (`valor > 0`, `limite >= 0`) como última rede de segurança.
+- **Razão contábil de partidas dobradas.** Toda transação grava, na mesma transação
+  do banco, um lote de lançamentos balanceados (Σ débitos = Σ créditos), com a conta
+  interna `CAIXA` fechando a contrapartida. O `transacao` é o extrato do cliente; o
+  `lancamento` é o livro razão — auditável e reconciliável. O balancete prova o
+  equilíbrio dos livros.
 - **Fechamento de arredondamento.** Na última parcela do empréstimo a amortização
   absorve o resíduo, zerando o saldo devedor em `0.00` exato (prática bancária real).
 - **Custos regulatórios no COBOL.** IOF (adicional 0,38% + diário 0,0082%/dia, dias

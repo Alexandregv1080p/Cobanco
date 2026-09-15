@@ -6,13 +6,16 @@ import { api, brl } from "../lib/api";
 
 export default function ContasPage() {
   const [contas, setContas] = useState([]);
+  const [balancete, setBalancete] = useState(null);
   const [form, setForm] = useState({ nome: "", cpf: "", numero: "", limite: "" });
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
 
   async function recarregar() {
     try {
-      setContas(await api.listarContas());
+      const [cs, bal] = await Promise.all([api.listarContas(), api.balancete()]);
+      setContas(cs);
+      setBalancete(bal);
     } catch (e) {
       setErro(e.message);
     }
@@ -98,6 +101,20 @@ export default function ContasPage() {
           </table>
         )}
       </div>
+
+      {balancete && (
+        <div className="card">
+          <h2>Balancete <span className="muted" style={{ fontSize: "0.6em" }}>(razão de partidas dobradas)</span></h2>
+          <div className="row">
+            <div className="muted">Total débitos: <strong>{brl(balancete.totalDebitos)}</strong></div>
+            <div className="muted">Total créditos: <strong>{brl(balancete.totalCreditos)}</strong></div>
+            <div className="muted">Caixa do banco: <strong>{brl(balancete.saldoCaixa)}</strong></div>
+          </div>
+          <p className={balancete.equilibrado ? "ok" : "erro"}>
+            {balancete.equilibrado ? "✓ Livros equilibrados (débitos = créditos)" : "✗ Livros desequilibrados"}
+          </p>
+        </div>
+      )}
     </>
   );
 }
