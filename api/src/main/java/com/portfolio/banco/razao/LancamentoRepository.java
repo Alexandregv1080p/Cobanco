@@ -18,6 +18,13 @@ public interface LancamentoRepository extends JpaRepository<Lancamento, Long> {
     @Query("select coalesce(sum(l.valor), 0) from Lancamento l where l.natureza = :nat")
     BigDecimal totalPorNatureza(@Param("nat") String natureza);
 
+    /** Saldo de uma conta de cliente segundo o razão (créditos - débitos). */
+    @Query("""
+            select coalesce(sum(case when l.natureza = 'C' then l.valor else -l.valor end), 0)
+            from Lancamento l where l.contaId = :contaId
+            """)
+    BigDecimal saldoRazao(@Param("contaId") Long contaId);
+
     /** Saldo de uma conta interna (débitos - créditos): p/ CAIXA = ativo. */
     @Query("""
             select coalesce(sum(case when l.natureza = 'D' then l.valor else -l.valor end), 0)

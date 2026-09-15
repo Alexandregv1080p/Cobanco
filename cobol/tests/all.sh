@@ -7,4 +7,6 @@ echo
 bash "$(dirname "$0")/casos_transacoes.sh"  || rc=1
 echo
 bash "$(dirname "$0")/casos_investimento.sh" || rc=1
+echo
+bash "$(dirname "$0")/casos_fechamento.sh" || rc=1
 exit $rc

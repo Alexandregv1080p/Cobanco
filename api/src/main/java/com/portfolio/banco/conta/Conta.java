@@ -33,6 +33,10 @@ public class Conta {
     @Column(nullable = false)
     private BigDecimal limite = BigDecimal.ZERO;
 
+    /** Taxa mensal do cheque especial, cobrada no fechamento diário sobre saldo negativo. */
+    @Column(name = "taxa_cheque_especial", nullable = false)
+    private BigDecimal taxaChequeEspecial = new BigDecimal("0.08");
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;

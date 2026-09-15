@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 public class RazaoService {
 
     static final String CAIXA = "CAIXA";
+    static final String RECEITA_JUROS = "RECEITA_JUROS";
 
     private final LancamentoRepository repo;
 
@@ -44,6 +45,14 @@ public class RazaoService {
         long lote = repo.proximoLote();
         lancar(lote, origemId, null, "D", valor, "Transferencia p/ conta " + destinoId);
         lancar(lote, destinoId, null, "C", valor, "Transferencia de conta " + origemId);
+    }
+
+    /** Cobrança de juros de cheque especial (batch): débito no cliente, crédito na receita. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void juros(Long contaId, BigDecimal valor) {
+        long lote = repo.proximoLote();
+        lancar(lote, contaId, null, "D", valor, "Juros cheque especial");
+        lancar(lote, null, RECEITA_JUROS, "C", valor, "Juros conta " + contaId);
     }
 
     private void lancar(long lote, Long contaId, String interna,

@@ -7,9 +7,20 @@ import { api, brl } from "../lib/api";
 export default function ContasPage() {
   const [contas, setContas] = useState([]);
   const [balancete, setBalancete] = useState(null);
+  const [fech, setFech] = useState(null);
   const [form, setForm] = useState({ nome: "", cpf: "", numero: "", limite: "" });
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+
+  async function rodarFechamento() {
+    setErro("");
+    try {
+      setFech(await api.fechamento());
+      await recarregar();
+    } catch (e) {
+      setErro(e.message);
+    }
+  }
 
   async function recarregar() {
     try {
@@ -115,6 +126,23 @@ export default function ContasPage() {
           </p>
         </div>
       )}
+
+      <div className="card">
+        <h2>Fechamento diário <span className="muted" style={{ fontSize: "0.6em" }}>(batch COBOL)</span></h2>
+        <p className="muted">
+          Cobra juros de cheque especial nas contas negativas e reconcilia saldo × razão.
+          Roda automaticamente à meia-noite; aqui você dispara sob demanda.
+        </p>
+        <button onClick={rodarFechamento}>Rodar fechamento agora</button>
+        {fech && (
+          <p className="ok">
+            {fech.contasProcessadas} contas processadas · juros cobrados {brl(fech.totalJuros)} ·{" "}
+            <span className={fech.divergencias === 0 ? "ok" : "erro"}>
+              {fech.divergencias} divergência(s) de reconciliação
+            </span>
+          </p>
+        )}
+      </div>
     </>
   );
 }

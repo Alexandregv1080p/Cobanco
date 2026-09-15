@@ -132,6 +132,26 @@ class TransacaoIntegracaoTest {
     }
 
     @Test
+    void fechamentoDiario_cobraJurosDeChequeEspecial() throws Exception {
+        long clienteId = criarCliente("Fechamento", "fec-1");
+        long contaId = criarConta(clienteId, "FEC-1", "1000.00"); // limite 1000, taxa CE 8% default
+
+        // saque de 200 sem saldo -> usa cheque especial -> saldo -200.00
+        mvc.perform(post("/contas/" + contaId + "/saque")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"valor\":200.00}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.saldo").value(-200.00));
+
+        // roda o batch: juros = 200 * 8% = 16.00 -> saldo -216.00; razão bate (0 divergências)
+        mvc.perform(post("/batch/fechamento-diario"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.divergencias").value(0));
+
+        mvc.perform(get("/contas/" + contaId + "/saldo"))
+                .andExpect(jsonPath("$.saldo").value(-216.00));
+    }
+
+    @Test
     void simularInvestimento_poupanca_isentaDeIR() throws Exception {
         mvc.perform(post("/investimentos/simular").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"tipo\":\"POUPANCA\",\"valor\":1000.00,\"taxaMensal\":0.01,\"meses\":12}"))
@@ -168,6 +188,7 @@ class TransacaoIntegracaoTest {
         compilar("../cobol/src/amortizacao.cob", out.resolve("amortizacao"));
         compilar("../cobol/src/transacoes.cob", out.resolve("transacoes"));
         compilar("../cobol/src/investimento.cob", out.resolve("investimento"));
+        compilar("../cobol/src/fechamento.cob", out.resolve("fechamento"));
         return out;
     }
 

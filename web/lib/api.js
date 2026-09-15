@@ -28,6 +28,7 @@ export const api = {
   simularInvestimento: (body) => req("/investimentos/simular", { method: "POST", body: JSON.stringify(body) }),
   razao: (id) => req(`/contas/${id}/razao`),
   balancete: () => req("/razao/balancete"),
+  fechamento: () => req("/batch/fechamento-diario", { method: "POST" }),
 };
 
 export function brl(v) {

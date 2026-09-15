@@ -100,6 +100,31 @@ public class CobolGateway {
         return new ResultadoTransferencia(new BigDecimal(f[1]), new BigDecimal(f[2]));
     }
 
+    // ---- Batch de fechamento (le N contas, uma por linha) ----
+    public ResultadoFechamento fechamento(List<String> contas) {
+        // Uma linha por conta: conta_id;saldo;taxa;saldo_razao
+        List<String> saida = executar("fechamento", String.join("\n", contas));
+
+        List<LinhaFechamento> linhas = new ArrayList<>();
+        int qtd = 0;
+        BigDecimal totalJuros = BigDecimal.ZERO;
+        int divergencias = 0;
+
+        for (String linha : saida) {
+            String[] f = linha.split(";");
+            if ("TOTAL".equals(f[0])) {                 // trailer
+                qtd = Integer.parseInt(f[1]);
+                totalJuros = new BigDecimal(f[2]);
+                divergencias = Integer.parseInt(f[3]);
+            } else {                                     // conta_id;juros;novo_saldo;recon
+                linhas.add(new LinhaFechamento(
+                        Long.parseLong(f[0]), new BigDecimal(f[1]),
+                        new BigDecimal(f[2]), f[3]));
+            }
+        }
+        return new ResultadoFechamento(qtd, totalJuros, divergencias, linhas);
+    }
+
     // ---- Infra ----
 
     private String linha(String op, BigDecimal valor, BigDecimal orig, BigDecimal dest, BigDecimal limite) {
