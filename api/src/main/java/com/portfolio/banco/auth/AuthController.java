@@ -3,6 +3,7 @@ package com.portfolio.banco.auth;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,8 @@ public class AuthController {
 
     @PostMapping("/registrar")
     public AuthService.AuthResponse registrar(@Valid @RequestBody RegistrarRequest req) {
-        return service.registrar(req.nome(), req.cpf(), req.email(), req.senha());
+        return service.registrar(req.tipo(), req.nome(), req.documento(),
+                req.telefone(), req.email(), req.senha());
     }
 
     @PostMapping("/login")
@@ -27,8 +29,10 @@ public class AuthController {
     }
 
     public record RegistrarRequest(
+            @NotBlank @Pattern(regexp = "FISICA|JURIDICA", message = "tipo deve ser FISICA ou JURIDICA") String tipo,
             @NotBlank String nome,
-            @NotBlank String cpf,
+            @NotBlank String documento,   // CPF ou CNPJ
+            @NotBlank String telefone,
             @NotBlank @Email String email,
             @NotBlank @Size(min = 6, message = "senha deve ter ao menos 6 caracteres") String senha) {}
 

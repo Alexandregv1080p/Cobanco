@@ -36,7 +36,7 @@ class AuthIntegracaoTest {
     void registro_login_eProtecaoDaApi() throws Exception {
         // registrar -> 200 + token
         String body = mvc.perform(post("/auth/registrar").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nome\":\"Ana\",\"cpf\":\"auth-cpf-1\",\"email\":\"ana@banco.com\",\"senha\":\"secreta1\"}"))
+                        .content("{\"tipo\":\"FISICA\",\"nome\":\"Ana\",\"documento\":\"auth-cpf-1\",\"telefone\":\"+5511999990000\",\"email\":\"ana@banco.com\",\"senha\":\"secreta1\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.papel").value("CLIENTE"))
                 .andExpect(jsonPath("$.token").isNotEmpty())
@@ -62,7 +62,7 @@ class AuthIntegracaoTest {
 
         // email duplicado -> 422 (regra de negocio)
         mvc.perform(post("/auth/registrar").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nome\":\"Outra\",\"cpf\":\"auth-cpf-2\",\"email\":\"ana@banco.com\",\"senha\":\"secreta1\"}"))
+                        .content("{\"tipo\":\"FISICA\",\"nome\":\"Outra\",\"documento\":\"auth-cpf-2\",\"telefone\":\"+5511999990001\",\"email\":\"ana@banco.com\",\"senha\":\"secreta1\"}"))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -113,8 +113,8 @@ class AuthIntegracaoTest {
     /** Registra e devolve [token, clienteId]. */
     private String[] registrar(String nome, String cpf, String email) throws Exception {
         String body = mvc.perform(post("/auth/registrar").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nome\":\"" + nome + "\",\"cpf\":\"" + cpf
-                                + "\",\"email\":\"" + email + "\",\"senha\":\"secreta1\"}"))
+                        .content("{\"tipo\":\"FISICA\",\"nome\":\"" + nome + "\",\"documento\":\"" + cpf
+                                + "\",\"telefone\":\"+550000000000\",\"email\":\"" + email + "\",\"senha\":\"secreta1\"}"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         var n = json.readTree(body);

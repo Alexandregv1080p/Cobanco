@@ -28,13 +28,16 @@ public class AuthService {
     }
 
     @Transactional
-    public AuthResponse registrar(String nome, String cpf, String email, String senha) {
+    public AuthResponse registrar(String tipo, String nome, String documento,
+                                  String telefone, String email, String senha) {
         if (usuarioRepo.existsByEmail(email)) {
             throw new RegraNegocioException("email ja cadastrado");
         }
         Cliente cliente = new Cliente();
+        cliente.setTipo(tipo);
         cliente.setNome(nome);
-        cliente.setCpf(cpf);
+        cliente.setCpf(documento);   // CPF ou CNPJ
+        cliente.setTelefone(telefone);
         clienteRepo.save(cliente);
 
         Usuario u = new Usuario();

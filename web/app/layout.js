@@ -1,3 +1,4 @@
+import "react-phone-number-input/style.css";
 import "./globals.css";
 import Nav from "./Nav";
 

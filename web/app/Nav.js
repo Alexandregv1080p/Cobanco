@@ -13,6 +13,9 @@ export default function Nav() {
   const cls = (href) =>
     pathname === href || (href !== "/" && pathname.startsWith(href)) ? "active" : "";
 
+  // Sem header nas telas de autenticação.
+  if (pathname === "/login" || pathname === "/registrar") return null;
+
   return (
     <nav className="nav">
       <span className="brand">🏦 Core Bancário</span>
