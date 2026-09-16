@@ -2,18 +2,23 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { getUser, logout } from "../lib/auth";
 
 export default function Nav() {
   const [user, setUser] = useState(null);
-  useEffect(() => { setUser(getUser()); }, []);
+  const pathname = usePathname();
+  useEffect(() => { setUser(getUser()); }, [pathname]);
+
+  const cls = (href) =>
+    pathname === href || (href !== "/" && pathname.startsWith(href)) ? "active" : "";
 
   return (
     <nav className="nav">
       <span className="brand">🏦 Core Bancário</span>
-      <Link href="/">Contas</Link>
-      <Link href="/emprestimos">Empréstimo</Link>
-      <Link href="/investimentos">Investimento</Link>
+      <Link href="/" className={cls("/")}>Contas</Link>
+      <Link href="/emprestimos" className={cls("/emprestimos")}>Empréstimo</Link>
+      <Link href="/investimentos" className={cls("/investimentos")}>Investimento</Link>
       <span className="muted" style={{ marginLeft: "auto" }}>
         {user ? (
           <>

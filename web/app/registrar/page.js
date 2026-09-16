@@ -27,8 +27,10 @@ export default function RegistrarPage() {
   }
 
   return (
-    <div style={{ maxWidth: 420, margin: "0 auto" }}>
+    <div className="auth">
+      <div className="logo">🏦</div>
       <h1>Criar conta</h1>
+      <p className="sub">Abra sua conta no Core Bancário</p>
       <div className="card">
         <form onSubmit={criar}>
           <label>Nome</label>

@@ -27,8 +27,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ maxWidth: 420, margin: "0 auto" }}>
-      <h1>Entrar</h1>
+    <div className="auth">
+      <div className="logo">🏦</div>
+      <h1>Core Bancário</h1>
+      <p className="sub">Núcleo financeiro em COBOL, modernizado</p>
       <div className="card">
         <form onSubmit={entrar}>
           <label>E-mail</label>
