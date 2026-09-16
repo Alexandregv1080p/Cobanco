@@ -1,5 +1,6 @@
 package com.portfolio.banco.transacao;
 
+import com.portfolio.banco.auth.Autorizacao;
 import com.portfolio.banco.cobol.CobolGateway;
 import com.portfolio.banco.cobol.ResultadoTransferencia;
 import com.portfolio.banco.common.NotFoundException;
@@ -24,18 +25,21 @@ public class TransacaoService {
     private final TransacaoRepository txRepo;
     private final CobolGateway cobol;
     private final RazaoService razao;
+    private final Autorizacao autz;
 
     public TransacaoService(ContaRepository contaRepo, TransacaoRepository txRepo,
-                            CobolGateway cobol, RazaoService razao) {
+                            CobolGateway cobol, RazaoService razao, Autorizacao autz) {
         this.contaRepo = contaRepo;
         this.txRepo = txRepo;
         this.cobol = cobol;
         this.razao = razao;
+        this.autz = autz;
     }
 
     @Transactional
     public BigDecimal deposito(Long contaId, BigDecimal valor) {
         Conta c = travar(contaId);
+        autz.exigirDono(c.getCliente().getId());
         BigDecimal novo = cobol.deposito(c.getSaldo(), valor);
         c.setSaldo(novo);
         registrar(contaId, null, "DEPOSITO", valor, novo);
@@ -46,6 +50,7 @@ public class TransacaoService {
     @Transactional
     public BigDecimal saque(Long contaId, BigDecimal valor) {
         Conta c = travar(contaId);
+        autz.exigirDono(c.getCliente().getId());
         // COBOL valida saldo/limite; se insuficiente, lanca RegraNegocioException.
         BigDecimal novo = cobol.saque(c.getSaldo(), valor, c.getLimite());
         c.setSaldo(novo);
@@ -68,6 +73,7 @@ public class TransacaoService {
             destino = travar(destinoId);
             origem = travar(origemId);
         }
+        autz.exigirDono(origem.getCliente().getId());   // só o dono da origem transfere
 
         ResultadoTransferencia r = cobol.transferencia(
                 origem.getSaldo(), destino.getSaldo(), valor, origem.getLimite());
@@ -83,9 +89,9 @@ public class TransacaoService {
 
     @Transactional(readOnly = true)
     public List<Transacao> extrato(Long contaId) {
-        if (!contaRepo.existsById(contaId)) {
-            throw new NotFoundException("conta " + contaId + " nao encontrada");
-        }
+        Conta c = contaRepo.findById(contaId)
+                .orElseThrow(() -> new NotFoundException("conta " + contaId + " nao encontrada"));
+        autz.exigirDono(c.getCliente().getId());
         return txRepo.findByContaIdOrderByCreatedAtDesc(contaId);
     }
 

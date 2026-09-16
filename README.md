@@ -94,6 +94,10 @@ Serviços:
 
 Parar: `docker compose down` (mantém os dados). Zerar o banco: `docker compose down -v`.
 
+**Login:** crie uma conta em **Criar conta**, ou entre como admin com
+`admin@banco.com` / `admin123` (semeado no primeiro start; troque por `ADMIN_EMAIL`
+/ `ADMIN_SENHA`). O admin enxerga todas as contas, o balancete e o fechamento.
+
 ---
 
 ## Estrutura do repositório
@@ -181,10 +185,13 @@ curl -X POST localhost:8080/emprestimos/simular -H 'Content-Type: application/js
 - **Validação em camadas.** Bean Validation na entrada (HTTP 400), regra de negócio
   no COBOL propagada como HTTP 422, e **constraints no próprio banco**
   (`valor > 0`, `limite >= 0`) como última rede de segurança.
-- **Autenticação na API, não no COBOL.** Registro, login, hash de senha e token
-  são responsabilidade do Spring — não são regra financeira, então o COBOL não os
+- **Autenticação e autorização na API, não no COBOL.** Registro, login, hash de
+  senha e token são do Spring — não são regra financeira, então o COBOL não os
   toca. **Spring Security + JWT** (stateless), senha em **BCrypt**, papéis
-  `ADMIN`/`CLIENTE`; `/auth/**` público e o resto exige token.
+  `ADMIN`/`CLIENTE`; `/auth/**` público e o resto exige token. **Autorização por
+  dono:** cada `CLIENTE` só enxerga e movimenta as próprias contas (o `clienteId`
+  viaja no token); operações do banco (balancete, fechamento, gestão de clientes)
+  são só de `ADMIN`. Um usuário admin é semeado no primeiro start.
 - **Razão contábil de partidas dobradas.** Toda transação grava, na mesma transação
   do banco, um lote de lançamentos balanceados (Σ débitos = Σ créditos), com a conta
   interna `CAIXA` fechando a contrapartida. O `transacao` é o extrato do cliente; o
@@ -230,6 +237,5 @@ cd api && mvn test
 
 ## Fora de escopo (MVP enxuto)
 
-Múltiplas moedas/câmbio e app mobile. A autorização por dono (cada CLIENTE só
-enxerga as próprias contas) é o próximo passo natural sobre a autenticação já
-existente. A arquitetura deixa espaço para todos eles sem reescrita.
+Múltiplas moedas/câmbio e app mobile. A arquitetura deixa espaço para ambos sem
+reescrita.

@@ -26,6 +26,11 @@ public class GlobalExceptionHandler {
         return body(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<Map<String, Object>> acessoNegado(AcessoNegadoException ex) {
+        return body(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
     /** Violacao de regra de negocio (ex.: saldo insuficiente vindo do COBOL). */
     @ExceptionHandler(RegraNegocioException.class)
     public ResponseEntity<Map<String, Object>> regra(RegraNegocioException ex) {

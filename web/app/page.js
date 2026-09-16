@@ -3,16 +3,54 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, brl } from "../lib/api";
-import { useRequireAuth } from "../lib/auth";
+import { useRequireAuth, getUser } from "../lib/auth";
 
 export default function ContasPage() {
   useRequireAuth();
+  const [user, setUser] = useState(null);
   const [contas, setContas] = useState([]);
   const [balancete, setBalancete] = useState(null);
   const [fech, setFech] = useState(null);
-  const [form, setForm] = useState({ nome: "", cpf: "", numero: "", limite: "" });
+  const [form, setForm] = useState({ numero: "", limite: "" });
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+
+  const isAdmin = user?.papel === "ADMIN";
+
+  async function recarregar(u = user) {
+    try {
+      setContas(await api.listarContas());
+      if (u?.papel === "ADMIN") setBalancete(await api.balancete());
+    } catch (e) {
+      setErro(e.message);
+    }
+  }
+
+  useEffect(() => {
+    const u = getUser();
+    setUser(u);
+    recarregar(u);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function criar(e) {
+    e.preventDefault();
+    setErro("");
+    setCarregando(true);
+    try {
+      await api.criarConta({
+        clienteId: user.clienteId,
+        numero: form.numero,
+        limite: form.limite ? Number(form.limite) : 0,
+      });
+      setForm({ numero: "", limite: "" });
+      await recarregar();
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setCarregando(false);
+    }
+  }
 
   async function rodarFechamento() {
     setErro("");
@@ -24,76 +62,33 @@ export default function ContasPage() {
     }
   }
 
-  async function recarregar() {
-    try {
-      const [cs, bal] = await Promise.all([api.listarContas(), api.balancete()]);
-      setContas(cs);
-      setBalancete(bal);
-    } catch (e) {
-      setErro(e.message);
-    }
-  }
-
-  useEffect(() => {
-    recarregar();
-  }, []);
-
-  async function criar(e) {
-    e.preventDefault();
-    setErro("");
-    setCarregando(true);
-    try {
-      // Cria o cliente e, em seguida, a conta dele.
-      const cliente = await api.criarCliente({ nome: form.nome, cpf: form.cpf });
-      await api.criarConta({
-        clienteId: cliente.id,
-        numero: form.numero,
-        limite: form.limite ? Number(form.limite) : 0,
-      });
-      setForm({ nome: "", cpf: "", numero: "", limite: "" });
-      await recarregar();
-    } catch (e) {
-      setErro(e.message);
-    } finally {
-      setCarregando(false);
-    }
-  }
-
   return (
     <>
       <h1>Contas</h1>
 
-      <div className="card">
-        <h2>Nova conta</h2>
-        <form onSubmit={criar}>
-          <div className="row">
-            <div>
-              <label>Nome do cliente</label>
-              <input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
+      {user?.clienteId && (
+        <div className="card">
+          <h2>Nova conta</h2>
+          <form onSubmit={criar}>
+            <div className="row">
+              <div>
+                <label>Número da conta</label>
+                <input value={form.numero} onChange={(e) => setForm({ ...form, numero: e.target.value })} required />
+              </div>
+              <div>
+                <label>Limite (cheque especial)</label>
+                <input type="number" step="0.01" min="0" value={form.limite}
+                       onChange={(e) => setForm({ ...form, limite: e.target.value })} />
+              </div>
             </div>
-            <div>
-              <label>CPF</label>
-              <input value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} required />
-            </div>
-          </div>
-          <div className="row">
-            <div>
-              <label>Número da conta</label>
-              <input value={form.numero} onChange={(e) => setForm({ ...form, numero: e.target.value })} required />
-            </div>
-            <div>
-              <label>Limite (cheque especial)</label>
-              <input type="number" step="0.01" min="0" value={form.limite}
-                     onChange={(e) => setForm({ ...form, limite: e.target.value })} />
-            </div>
-          </div>
-          <button disabled={carregando}>{carregando ? "Criando..." : "Criar conta"}</button>
-          {erro && <div className="erro">{erro}</div>}
-        </form>
-      </div>
+            <button disabled={carregando}>{carregando ? "Criando..." : "Criar conta"}</button>
+            {erro && <div className="erro">{erro}</div>}
+          </form>
+        </div>
+      )}
 
       <div className="card">
-        <h2>Contas cadastradas</h2>
+        <h2>{isAdmin ? "Todas as contas" : "Minhas contas"}</h2>
         {contas.length === 0 ? (
           <p className="muted">Nenhuma conta ainda.</p>
         ) : (
@@ -115,7 +110,7 @@ export default function ContasPage() {
         )}
       </div>
 
-      {balancete && (
+      {isAdmin && balancete && (
         <div className="card">
           <h2>Balancete <span className="muted" style={{ fontSize: "0.6em" }}>(razão de partidas dobradas)</span></h2>
           <div className="row">
@@ -129,22 +124,24 @@ export default function ContasPage() {
         </div>
       )}
 
-      <div className="card">
-        <h2>Fechamento diário <span className="muted" style={{ fontSize: "0.6em" }}>(batch COBOL)</span></h2>
-        <p className="muted">
-          Cobra juros de cheque especial nas contas negativas e reconcilia saldo × razão.
-          Roda automaticamente à meia-noite; aqui você dispara sob demanda.
-        </p>
-        <button onClick={rodarFechamento}>Rodar fechamento agora</button>
-        {fech && (
-          <p className="ok">
-            {fech.contasProcessadas} contas processadas · juros cobrados {brl(fech.totalJuros)} ·{" "}
-            <span className={fech.divergencias === 0 ? "ok" : "erro"}>
-              {fech.divergencias} divergência(s) de reconciliação
-            </span>
+      {isAdmin && (
+        <div className="card">
+          <h2>Fechamento diário <span className="muted" style={{ fontSize: "0.6em" }}>(batch COBOL)</span></h2>
+          <p className="muted">
+            Cobra juros de cheque especial nas contas negativas e reconcilia saldo × razão.
+            Roda automaticamente à meia-noite; aqui você dispara sob demanda.
           </p>
-        )}
-      </div>
+          <button onClick={rodarFechamento}>Rodar fechamento agora</button>
+          {fech && (
+            <p className="ok">
+              {fech.contasProcessadas} contas processadas · juros cobrados {brl(fech.totalJuros)} ·{" "}
+              <span className={fech.divergencias === 0 ? "ok" : "erro"}>
+                {fech.divergencias} divergência(s) de reconciliação
+              </span>
+            </p>
+          )}
+        </div>
+      )}
     </>
   );
 }

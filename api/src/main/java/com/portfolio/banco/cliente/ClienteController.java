@@ -1,5 +1,6 @@
 package com.portfolio.banco.cliente;
 
+import com.portfolio.banco.auth.Autorizacao;
 import com.portfolio.banco.common.NotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -14,14 +15,17 @@ import java.util.List;
 public class ClienteController {
 
     private final ClienteRepository repo;
+    private final Autorizacao autz;
 
-    public ClienteController(ClienteRepository repo) {
+    public ClienteController(ClienteRepository repo, Autorizacao autz) {
         this.repo = repo;
+        this.autz = autz;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ClienteResponse criar(@Valid @RequestBody CriarClienteRequest req) {
+        autz.exigirAdmin();   // gestão de clientes é do admin; usuários se cadastram por /auth/registrar
         Cliente c = new Cliente();
         c.setNome(req.nome());
         c.setCpf(req.cpf());
@@ -30,6 +34,7 @@ public class ClienteController {
 
     @GetMapping
     public List<ClienteResponse> listar() {
+        autz.exigirAdmin();
         return repo.findAll().stream().map(ClienteResponse::de).toList();
     }
 

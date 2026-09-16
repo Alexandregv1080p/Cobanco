@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface ContaRepository extends JpaRepository<Conta, Long> {
     Optional<Conta> findByNumero(String numero);
     boolean existsByNumero(String numero);
+    java.util.List<Conta> findByClienteId(Long clienteId);
 
     /** Trava a linha da conta (SELECT ... FOR UPDATE) no caminho do dinheiro. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)

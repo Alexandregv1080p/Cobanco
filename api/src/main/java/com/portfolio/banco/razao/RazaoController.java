@@ -1,6 +1,8 @@
 package com.portfolio.banco.razao;
 
+import com.portfolio.banco.auth.Autorizacao;
 import com.portfolio.banco.common.NotFoundException;
+import com.portfolio.banco.conta.Conta;
 import com.portfolio.banco.conta.ContaRepository;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,28 +15,31 @@ public class RazaoController {
 
     private final LancamentoRepository repo;
     private final ContaRepository contaRepo;
+    private final Autorizacao autz;
 
-    public RazaoController(LancamentoRepository repo, ContaRepository contaRepo) {
+    public RazaoController(LancamentoRepository repo, ContaRepository contaRepo, Autorizacao autz) {
         this.repo = repo;
         this.contaRepo = contaRepo;
+        this.autz = autz;
     }
 
     /** Livro razão de uma conta de cliente (só os lançamentos dela). */
     @GetMapping("/contas/{id}/razao")
     public List<LancamentoItem> razaoDaConta(@PathVariable Long id) {
-        if (!contaRepo.existsById(id)) {
-            throw new NotFoundException("conta " + id + " nao encontrada");
-        }
+        Conta c = contaRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("conta " + id + " nao encontrada"));
+        autz.exigirDono(c.getCliente().getId());
         return repo.findByContaIdOrderByCreatedAtDescIdDesc(id).stream()
                 .map(LancamentoItem::de).toList();
     }
 
     /**
      * Balancete: prova que os livros fecham (total débitos = total créditos)
-     * e mostra o saldo do CAIXA (caixa líquido do banco).
+     * e mostra o saldo do CAIXA (caixa líquido do banco). Só admin.
      */
     @GetMapping("/razao/balancete")
     public Balancete balancete() {
+        autz.exigirAdmin();
         BigDecimal debitos = repo.totalPorNatureza("D");
         BigDecimal creditos = repo.totalPorNatureza("C");
         return new Balancete(

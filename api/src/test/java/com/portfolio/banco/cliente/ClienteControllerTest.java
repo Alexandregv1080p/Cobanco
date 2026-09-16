@@ -30,6 +30,9 @@ class ClienteControllerTest {
     @MockBean
     com.portfolio.banco.auth.JwtAuthFilter jwtAuthFilter;   // satisfaz o SecurityConfig no slice
 
+    @MockBean
+    com.portfolio.banco.auth.Autorizacao autz;   // exigirAdmin() vira no-op no slice
+
     @Test
     void criarClienteValido_retorna201() throws Exception {
         when(repo.save(any())).thenAnswer(inv -> {

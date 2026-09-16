@@ -1,7 +1,9 @@
 package com.portfolio.banco.conta;
 
+import com.portfolio.banco.auth.Autorizacao;
 import com.portfolio.banco.cliente.Cliente;
 import com.portfolio.banco.cliente.ClienteRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -34,6 +36,15 @@ class ContaControllerTest {
 
     @MockBean
     com.portfolio.banco.auth.JwtAuthFilter jwtAuthFilter;   // satisfaz o SecurityConfig no slice
+
+    @MockBean
+    Autorizacao autz;
+
+    @BeforeEach
+    void semAuth() {
+        // sem cadeia de auth no slice: trata como chamada confiavel
+        when(autz.semAutenticacao()).thenReturn(true);
+    }
 
     private Cliente cliente(long id) {
         Cliente c = new Cliente();

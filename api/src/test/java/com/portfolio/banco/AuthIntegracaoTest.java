@@ -65,4 +65,59 @@ class AuthIntegracaoTest {
                         .content("{\"nome\":\"Outra\",\"cpf\":\"auth-cpf-2\",\"email\":\"ana@banco.com\",\"senha\":\"secreta1\"}"))
                 .andExpect(status().isUnprocessableEntity());
     }
+
+    @Test
+    void ownership_clienteSoAcessaSuasContas() throws Exception {
+        String[] a = registrar("Alice", "own-a", "alice@banco.com");
+        String tokenA = a[0], clienteA = a[1];
+
+        // Alice cria uma conta (o clienteId enviado e forcado para o dela)
+        String contaBody = mvc.perform(post("/contas").header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"clienteId\":" + clienteA + ",\"numero\":\"OWN-A\",\"limite\":0}"))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long contaA = json.readTree(contaBody).get("id").asLong();
+
+        String tokenB = registrar("Bob", "own-b", "bob@banco.com")[0];
+
+        // Bob NAO acessa a conta da Alice
+        mvc.perform(get("/contas/" + contaA).header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/contas/" + contaA + "/deposito").header("Authorization", "Bearer " + tokenB)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"valor\":10.00}"))
+                .andExpect(status().isForbidden());
+        // Bob lista contas -> nenhuma
+        mvc.perform(get("/contas").header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+
+        // Alice acessa a propria conta
+        mvc.perform(get("/contas/" + contaA).header("Authorization", "Bearer " + tokenA))
+                .andExpect(status().isOk());
+
+        // CLIENTE nao ve o balancete (so admin)
+        mvc.perform(get("/razao/balancete").header("Authorization", "Bearer " + tokenA))
+                .andExpect(status().isForbidden());
+
+        // admin (seed) ve o balancete
+        String adminBody = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"admin@banco.com\",\"senha\":\"admin123\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String tokenAdmin = json.readTree(adminBody).get("token").asText();
+        mvc.perform(get("/razao/balancete").header("Authorization", "Bearer " + tokenAdmin))
+                .andExpect(status().isOk());
+    }
+
+    /** Registra e devolve [token, clienteId]. */
+    private String[] registrar(String nome, String cpf, String email) throws Exception {
+        String body = mvc.perform(post("/auth/registrar").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nome\":\"" + nome + "\",\"cpf\":\"" + cpf
+                                + "\",\"email\":\"" + email + "\",\"senha\":\"secreta1\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        var n = json.readTree(body);
+        return new String[]{n.get("token").asText(), n.get("clienteId").asText()};
+    }
 }

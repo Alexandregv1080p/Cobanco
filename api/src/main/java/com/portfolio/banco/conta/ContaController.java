@@ -1,5 +1,6 @@
 package com.portfolio.banco.conta;
 
+import com.portfolio.banco.auth.Autorizacao;
 import com.portfolio.banco.cliente.Cliente;
 import com.portfolio.banco.cliente.ClienteRepository;
 import com.portfolio.banco.common.NotFoundException;
@@ -19,17 +20,23 @@ public class ContaController {
 
     private final ContaRepository contaRepo;
     private final ClienteRepository clienteRepo;
+    private final Autorizacao autz;
 
-    public ContaController(ContaRepository contaRepo, ClienteRepository clienteRepo) {
+    public ContaController(ContaRepository contaRepo, ClienteRepository clienteRepo, Autorizacao autz) {
         this.contaRepo = contaRepo;
         this.clienteRepo = clienteRepo;
+        this.autz = autz;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ContaResponse criar(@Valid @RequestBody CriarContaRequest req) {
-        Cliente dono = clienteRepo.findById(req.clienteId())
-                .orElseThrow(() -> new NotFoundException("cliente " + req.clienteId() + " nao encontrado"));
+        // CLIENTE só cria conta pra si mesmo; admin pode escolher o cliente.
+        Long clienteId = (!autz.semAutenticacao() && !autz.isAdmin())
+                ? autz.clienteId()
+                : req.clienteId();
+        Cliente dono = clienteRepo.findById(clienteId)
+                .orElseThrow(() -> new NotFoundException("cliente " + clienteId + " nao encontrado"));
 
         Conta c = new Conta();
         c.setCliente(dono);
@@ -41,7 +48,11 @@ public class ContaController {
 
     @GetMapping
     public List<ContaResponse> listar() {
-        return contaRepo.findAll().stream().map(ContaResponse::de).toList();
+        // CLIENTE vê só as próprias; admin (ou sem auth) vê todas.
+        List<Conta> contas = (autz.semAutenticacao() || autz.isAdmin())
+                ? contaRepo.findAll()
+                : contaRepo.findByClienteId(autz.clienteId());
+        return contas.stream().map(ContaResponse::de).toList();
     }
 
     @GetMapping("/{id}")
@@ -56,8 +67,10 @@ public class ContaController {
     }
 
     private Conta achar(Long id) {
-        return contaRepo.findById(id)
+        Conta c = contaRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("conta " + id + " nao encontrada"));
+        autz.exigirDono(c.getCliente().getId());
+        return c;
     }
 
     // --- DTOs ---
