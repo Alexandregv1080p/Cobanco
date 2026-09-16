@@ -21,6 +21,11 @@ public class GlobalExceptionHandler {
         return body(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(NaoAutorizadoException.class)
+    public ResponseEntity<Map<String, Object>> naoAutorizado(NaoAutorizadoException ex) {
+        return body(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
     /** Violacao de regra de negocio (ex.: saldo insuficiente vindo do COBOL). */
     @ExceptionHandler(RegraNegocioException.class)
     public ResponseEntity<Map<String, Object>> regra(RegraNegocioException ex) {

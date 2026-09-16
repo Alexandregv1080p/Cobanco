@@ -1,5 +1,5 @@
 import "./globals.css";
-import Link from "next/link";
+import Nav from "./Nav";
 
 export const metadata = {
   title: "Core Bancário COBOL",
@@ -10,15 +10,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
       <body>
-        <nav className="nav">
-          <span className="brand">🏦 Core Bancário</span>
-          <Link href="/">Contas</Link>
-          <Link href="/emprestimos">Empréstimo</Link>
-          <Link href="/investimentos">Investimento</Link>
-          <span className="muted" style={{ marginLeft: "auto" }}>
-            núcleo COBOL · API Spring · Postgres
-          </span>
-        </nav>
+        <Nav />
         <main className="container">{children}</main>
       </body>
     </html>

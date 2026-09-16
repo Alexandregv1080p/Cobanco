@@ -126,8 +126,12 @@ core-bancario-cobol/
 
 ## Endpoints principais
 
+Autenticação por **JWT**: `/auth/**` é público; os demais exigem
+`Authorization: Bearer <token>`.
+
 | Método | Rota | Descrição |
 |--------|------|-----------|
+| `POST` | `/auth/registrar` · `/auth/login` | cria usuário / autentica (devolve JWT) |
 | `POST` | `/clientes` | cria cliente |
 | `POST` | `/contas` | cria conta (com limite de cheque especial) |
 | `GET`  | `/contas` · `/contas/{id}` · `/contas/{id}/saldo` | consulta |
@@ -177,6 +181,10 @@ curl -X POST localhost:8080/emprestimos/simular -H 'Content-Type: application/js
 - **Validação em camadas.** Bean Validation na entrada (HTTP 400), regra de negócio
   no COBOL propagada como HTTP 422, e **constraints no próprio banco**
   (`valor > 0`, `limite >= 0`) como última rede de segurança.
+- **Autenticação na API, não no COBOL.** Registro, login, hash de senha e token
+  são responsabilidade do Spring — não são regra financeira, então o COBOL não os
+  toca. **Spring Security + JWT** (stateless), senha em **BCrypt**, papéis
+  `ADMIN`/`CLIENTE`; `/auth/**` público e o resto exige token.
 - **Razão contábil de partidas dobradas.** Toda transação grava, na mesma transação
   do banco, um lote de lançamentos balanceados (Σ débitos = Σ créditos), com a conta
   interna `CAIXA` fechando a contrapartida. O `transacao` é o extrato do cliente; o
@@ -222,5 +230,6 @@ cd api && mvn test
 
 ## Fora de escopo (MVP enxuto)
 
-Múltiplas moedas/câmbio, autenticação robusta (login simples basta) e app mobile.
-A arquitetura deixa espaço para todos eles sem reescrita.
+Múltiplas moedas/câmbio e app mobile. A autorização por dono (cada CLIENTE só
+enxerga as próprias contas) é o próximo passo natural sobre a autenticação já
+existente. A arquitetura deixa espaço para todos eles sem reescrita.

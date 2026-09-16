@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { api, brl } from "../../../lib/api";
+import { useRequireAuth } from "../../../lib/auth";
 
 export default function ContaDetalhePage() {
+  useRequireAuth();
   const { id } = useParams();
   const [conta, setConta] = useState(null);
   const [outras, setOutras] = useState([]);

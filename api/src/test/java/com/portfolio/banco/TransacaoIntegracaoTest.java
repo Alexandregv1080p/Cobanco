@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * temporario. So roda onde ha Docker + GnuCOBOL (cobc); caso contrario, e pulado.
  */
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)   // fluxos de negocio testados sem a camada de auth
 @Testcontainers
 @EnabledIf("cobcDisponivel")
 class TransacaoIntegracaoTest {

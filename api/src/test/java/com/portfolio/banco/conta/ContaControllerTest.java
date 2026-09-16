@@ -4,6 +4,7 @@ import com.portfolio.banco.cliente.Cliente;
 import com.portfolio.banco.cliente.ClienteRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ContaController.class)
+@AutoConfigureMockMvc(addFilters = false)   // testa o controller sem a cadeia de seguranca
 class ContaControllerTest {
 
     @Autowired
@@ -29,6 +31,9 @@ class ContaControllerTest {
 
     @MockBean
     ClienteRepository clienteRepo;
+
+    @MockBean
+    com.portfolio.banco.auth.JwtAuthFilter jwtAuthFilter;   // satisfaz o SecurityConfig no slice
 
     private Cliente cliente(long id) {
         Cliente c = new Cliente();

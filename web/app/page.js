@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, brl } from "../lib/api";
+import { useRequireAuth } from "../lib/auth";
 
 export default function ContasPage() {
+  useRequireAuth();
   const [contas, setContas] = useState([]);
   const [balancete, setBalancete] = useState(null);
   const [fech, setFech] = useState(null);

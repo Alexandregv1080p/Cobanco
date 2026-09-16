@@ -19,5 +19,10 @@ cobol:
   # subprocess = spawn por chamada | ffi = lib compartilhada in-process (transacoes)
   mode: ${COBOL_MODE:subprocess}
 
+jwt:
+  # troque por um segredo forte em producao (>= 32 bytes); vem do ambiente
+  secret: ${JWT_SECRET:dev-secret-troque-em-producao-com-no-minimo-32-bytes-0123456789}
+  expiration-minutes: ${JWT_EXP_MIN:120}
+
 server:
   port: 8080

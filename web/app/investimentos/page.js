@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { api, brl } from "../../lib/api";
+import { useRequireAuth } from "../../lib/auth";
 
 const pct = (v) =>
   (Number(v) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 }) + "%";
 
 export default function InvestimentosPage() {
+  useRequireAuth();
   const [form, setForm] = useState({ tipo: "CDB", valor: "10000", taxaMensal: "0.01", meses: "24" });
   const [r, setR] = useState(null);
   const [erro, setErro] = useState("");
