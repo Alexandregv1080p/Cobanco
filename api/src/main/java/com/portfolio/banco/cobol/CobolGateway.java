@@ -27,9 +27,15 @@ public class CobolGateway {
     private static final int TIMEOUT_S = 10;
 
     private final String binDir;
+    private final String mode;      // "subprocess" | "ffi"
+    private final FfiCobol ffi;
 
-    public CobolGateway(@Value("${cobol.bin-dir}") String binDir) {
+    public CobolGateway(@Value("${cobol.bin-dir}") String binDir,
+                        @Value("${cobol.mode:subprocess}") String mode,
+                        FfiCobol ffi) {
         this.binDir = binDir;
+        this.mode = mode;
+        this.ffi = ffi;
     }
 
     // ---- Emprestimo: tabela de amortizacao (Price/SAC/Americano) + custos ----
@@ -82,22 +88,40 @@ public class CobolGateway {
         return res;
     }
 
-    // ---- Transacoes ----
+    // ---- Transacoes (caminho quente: subprocesso OU FFI in-process) ----
     public BigDecimal deposito(BigDecimal saldo, BigDecimal valor) {
-        return umSaldo(executar("transacoes",
+        return saldoDe(processarTransacao(
                 linha("DEPOSITO", valor, saldo, BigDecimal.ZERO, BigDecimal.ZERO)));
     }
 
     public BigDecimal saque(BigDecimal saldo, BigDecimal valor, BigDecimal limite) {
-        return umSaldo(executar("transacoes",
+        return saldoDe(processarTransacao(
                 linha("SAQUE", valor, saldo, BigDecimal.ZERO, limite)));
     }
 
     public ResultadoTransferencia transferencia(BigDecimal saldoOrigem, BigDecimal saldoDestino,
                                                 BigDecimal valor, BigDecimal limite) {
-        String[] f = executar("transacoes",
-                linha("TRANSFERENCIA", valor, saldoOrigem, saldoDestino, limite)).get(0).split(";");
+        String[] f = processarTransacao(
+                linha("TRANSFERENCIA", valor, saldoOrigem, saldoDestino, limite)).split(";");
         return new ResultadoTransferencia(new BigDecimal(f[1]), new BigDecimal(f[2]));
+    }
+
+    /**
+     * Executa uma transacao pelo modo configurado. A regra de negocio e o
+     * mesmo nucleo COBOL nos dois caminhos; muda so COMO ele e invocado.
+     */
+    private String processarTransacao(String entrada) {
+        String saida = "ffi".equalsIgnoreCase(mode)
+                ? ffi.executar(entrada)
+                : executar("transacoes", entrada).get(0);
+        if (saida.startsWith(PREFIXO_ERRO)) {
+            throw new RegraNegocioException(saida.substring(PREFIXO_ERRO.length()).trim());
+        }
+        return saida;
+    }
+
+    private BigDecimal saldoDe(String linha) {
+        return new BigDecimal(linha.split(";")[1]);
     }
 
     // ---- Batch de fechamento (le N contas, uma por linha) ----
@@ -129,11 +153,6 @@ public class CobolGateway {
 
     private String linha(String op, BigDecimal valor, BigDecimal orig, BigDecimal dest, BigDecimal limite) {
         return String.join(";", op, plain(valor), plain(orig), plain(dest), plain(limite));
-    }
-
-    /** "OK;saldo" -> saldo (DEPOSITO/SAQUE). */
-    private BigDecimal umSaldo(List<String> saida) {
-        return new BigDecimal(saida.get(0).split(";")[1]);
     }
 
     private String plain(BigDecimal b) {

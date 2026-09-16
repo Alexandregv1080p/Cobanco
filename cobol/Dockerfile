@@ -10,7 +10,7 @@ COPY tests/ ./tests/
 
 # Compila os modulos COBOL como executaveis na PATH.
 RUN cobc -x -free -o /usr/local/bin/amortizacao src/amortizacao.cob \
- && cobc -x -free -o /usr/local/bin/transacoes  src/transacoes.cob \
+ && cobc -x -free -o /usr/local/bin/transacoes  src/transacoes.cob src/transacaocore.cob \
  && cobc -x -free -o /usr/local/bin/investimento src/investimento.cob \
  && cobc -x -free -o /usr/local/bin/fechamento  src/fechamento.cob
 

@@ -24,6 +24,7 @@ services:
       DB_URL: jdbc:postgresql://db:5432/banco
       DB_USER: banco
       DB_PASSWORD: banco
+      COBOL_MODE: ffi   # transacoes via lib compartilhada in-process (FFI)
     ports:
       - "8080:8080"
     depends_on:

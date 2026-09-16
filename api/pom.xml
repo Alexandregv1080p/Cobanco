@@ -56,6 +56,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- FFI: chamar a lib COBOL compartilhada in-process -->
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.14.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

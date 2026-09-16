@@ -185,18 +185,21 @@ class TransacaoIntegracaoTest {
 
     private static Path compilarCobol() throws Exception {
         Path out = Files.createTempDirectory("cobol-bin");
-        compilar("../cobol/src/amortizacao.cob", out.resolve("amortizacao"));
-        compilar("../cobol/src/transacoes.cob", out.resolve("transacoes"));
-        compilar("../cobol/src/investimento.cob", out.resolve("investimento"));
-        compilar("../cobol/src/fechamento.cob", out.resolve("fechamento"));
+        compilar(out.resolve("amortizacao"), "../cobol/src/amortizacao.cob");
+        // transacoes chama o nucleo TRANSACAOCORE: compila os dois juntos
+        compilar(out.resolve("transacoes"), "../cobol/src/transacoes.cob", "../cobol/src/transacaocore.cob");
+        compilar(out.resolve("investimento"), "../cobol/src/investimento.cob");
+        compilar(out.resolve("fechamento"), "../cobol/src/fechamento.cob");
         return out;
     }
 
-    private static void compilar(String src, Path dest) throws Exception {
-        Process p = new ProcessBuilder("cobc", "-x", "-free", "-o", dest.toString(), src)
-                .inheritIO().start();
+    private static void compilar(Path dest, String... srcs) throws Exception {
+        java.util.List<String> cmd = new java.util.ArrayList<>(
+                java.util.List.of("cobc", "-x", "-free", "-o", dest.toString()));
+        cmd.addAll(java.util.List.of(srcs));
+        Process p = new ProcessBuilder(cmd).inheritIO().start();
         if (!p.waitFor(60, TimeUnit.SECONDS) || p.exitValue() != 0) {
-            throw new IllegalStateException("falha ao compilar " + src);
+            throw new IllegalStateException("falha ao compilar " + java.util.Arrays.toString(srcs));
         }
     }
 

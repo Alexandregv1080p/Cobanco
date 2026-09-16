@@ -15,12 +15,15 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends openjdk-21-jre-headless gnucobol \
  && rm -rf /var/lib/apt/lists/*
 
-# Compila o nucleo COBOL para a PATH.
+# Compila o nucleo COBOL: executaveis (subprocesso) + lib compartilhada (FFI).
 COPY cobol/src /opt/cobol/src
+COPY cobol/ffi /opt/cobol/ffi
 RUN cobc -x -free -o /usr/local/bin/amortizacao /opt/cobol/src/amortizacao.cob \
- && cobc -x -free -o /usr/local/bin/transacoes  /opt/cobol/src/transacoes.cob \
+ && cobc -x -free -o /usr/local/bin/transacoes  /opt/cobol/src/transacoes.cob /opt/cobol/src/transacaocore.cob \
  && cobc -x -free -o /usr/local/bin/investimento /opt/cobol/src/investimento.cob \
- && cobc -x -free -o /usr/local/bin/fechamento  /opt/cobol/src/fechamento.cob
+ && cobc -x -free -o /usr/local/bin/fechamento  /opt/cobol/src/fechamento.cob \
+ && cobc -b -free -o /usr/local/lib/libtransacaoffi.so /opt/cobol/ffi/bridge.c /opt/cobol/src/transacaocore.cob \
+ && ldconfig
 
 COPY --from=build /build/target/*.jar /app/app.jar
 WORKDIR /app

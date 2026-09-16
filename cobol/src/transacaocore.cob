@@ -1,0 +1,114 @@
+>>SOURCE FORMAT FREE
+*> ============================================================
+*> TRANSACAOCORE.COB - Nucleo CHAMAVEL de transacoes bancarias
+*>
+*> Mesma logica de transacoes.cob, porem exposto como SUBPROGRAMA:
+*> recebe entrada e devolve saida via LINKAGE SECTION (nao usa
+*> stdin/stdout). Assim pode ser chamado de duas formas, sem
+*> duplicar a regra:
+*>   - subprocesso:  transacoes.cob faz CALL 'TRANSACAOCORE'
+*>   - in-process (FFI): a API chama o modulo .so via JNA
+*>
+*> Contrato: LK-ENTRADA = "OPERACAO;valor;saldo_orig;saldo_dest;limite"
+*>           LK-SAIDA   = "OK;..." ou "ERRO;<msg>"
+*> ============================================================
+IDENTIFICATION DIVISION.
+PROGRAM-ID. TRANSACAOCORE.
+
+DATA DIVISION.
+WORKING-STORAGE SECTION.
+01 WS-OP-TXT         PIC X(20).
+01 WS-VALOR-TXT      PIC X(25).
+01 WS-ORIG-TXT       PIC X(25).
+01 WS-DEST-TXT       PIC X(25).
+01 WS-LIM-TXT        PIC X(25).
+
+01 WS-OP             PIC X(15).
+01 WS-VALOR          PIC S9(13)V99 COMP-3.
+01 WS-SALDO-ORIG     PIC S9(13)V99 COMP-3.
+01 WS-SALDO-DEST     PIC S9(13)V99 COMP-3.
+01 WS-LIMITE         PIC S9(13)V99 COMP-3.
+
+01 WS-NOVO-ORIG      PIC S9(13)V99 COMP-3.
+01 WS-NOVO-DEST      PIC S9(13)V99 COMP-3.
+01 WS-MIN            PIC S9(13)V99 COMP-3.
+
+01 WS-DIN-A          PIC -(13)9.99.
+01 WS-DIN-B          PIC -(13)9.99.
+
+LINKAGE SECTION.
+01 LK-ENTRADA        PIC X(120).
+01 LK-SAIDA          PIC X(120).
+
+PROCEDURE DIVISION USING LK-ENTRADA LK-SAIDA.
+
+MAIN.
+    MOVE SPACES TO LK-SAIDA
+    PERFORM LER-E-VALIDAR
+    IF LK-SAIDA(1:4) NOT = 'ERRO'
+        EVALUATE WS-OP
+            WHEN 'DEPOSITO'       PERFORM OP-DEPOSITO
+            WHEN 'SAQUE'          PERFORM OP-SAQUE
+            WHEN 'TRANSFERENCIA'  PERFORM OP-TRANSFERENCIA
+            WHEN OTHER
+                MOVE 'ERRO;operacao invalida (use DEPOSITO, SAQUE ou TRANSFERENCIA)'
+                    TO LK-SAIDA
+        END-EVALUATE
+    END-IF
+    GOBACK.
+
+LER-E-VALIDAR.
+    UNSTRING LK-ENTRADA DELIMITED BY ';'
+        INTO WS-OP-TXT WS-VALOR-TXT WS-ORIG-TXT WS-DEST-TXT WS-LIM-TXT
+    END-UNSTRING
+
+    MOVE FUNCTION UPPER-CASE(FUNCTION TRIM(WS-OP-TXT)) TO WS-OP
+    COMPUTE WS-VALOR      = FUNCTION NUMVAL(WS-VALOR-TXT)
+    COMPUTE WS-SALDO-ORIG = FUNCTION NUMVAL(WS-ORIG-TXT)
+    COMPUTE WS-SALDO-DEST = FUNCTION NUMVAL(WS-DEST-TXT)
+    COMPUTE WS-LIMITE     = FUNCTION NUMVAL(WS-LIM-TXT)
+
+    IF WS-VALOR <= 0
+        MOVE 'ERRO;valor deve ser maior que zero' TO LK-SAIDA
+    END-IF.
+
+OP-DEPOSITO.
+    IF LK-SAIDA(1:4) = 'ERRO' EXIT PARAGRAPH END-IF
+    COMPUTE WS-NOVO-ORIG = WS-SALDO-ORIG + WS-VALOR
+    MOVE WS-NOVO-ORIG TO WS-DIN-A
+    STRING 'OK;' DELIMITED BY SIZE
+           FUNCTION TRIM(WS-DIN-A) DELIMITED BY SIZE
+           INTO LK-SAIDA
+    END-STRING.
+
+OP-SAQUE.
+    IF LK-SAIDA(1:4) = 'ERRO' EXIT PARAGRAPH END-IF
+    COMPUTE WS-NOVO-ORIG = WS-SALDO-ORIG - WS-VALOR
+    COMPUTE WS-MIN = WS-LIMITE * -1
+    IF WS-NOVO-ORIG < WS-MIN
+        MOVE 'ERRO;saldo insuficiente' TO LK-SAIDA
+        EXIT PARAGRAPH
+    END-IF
+    MOVE WS-NOVO-ORIG TO WS-DIN-A
+    STRING 'OK;' DELIMITED BY SIZE
+           FUNCTION TRIM(WS-DIN-A) DELIMITED BY SIZE
+           INTO LK-SAIDA
+    END-STRING.
+
+OP-TRANSFERENCIA.
+    IF LK-SAIDA(1:4) = 'ERRO' EXIT PARAGRAPH END-IF
+    COMPUTE WS-NOVO-ORIG = WS-SALDO-ORIG - WS-VALOR
+    COMPUTE WS-MIN = WS-LIMITE * -1
+    IF WS-NOVO-ORIG < WS-MIN
+        MOVE 'ERRO;saldo insuficiente na origem' TO LK-SAIDA
+        EXIT PARAGRAPH
+    END-IF
+    COMPUTE WS-NOVO-DEST = WS-SALDO-DEST + WS-VALOR
+    MOVE WS-NOVO-ORIG TO WS-DIN-A
+    MOVE WS-NOVO-DEST TO WS-DIN-B
+    STRING 'OK;'                  DELIMITED BY SIZE
+           FUNCTION TRIM(WS-DIN-A) DELIMITED BY SIZE
+           ';'                     DELIMITED BY SIZE
+           FUNCTION TRIM(WS-DIN-B) DELIMITED BY SIZE
+           INTO LK-SAIDA
+    END-STRING.

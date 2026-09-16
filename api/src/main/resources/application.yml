@@ -13,9 +13,11 @@ spring:
   flyway:
     enabled: true
 
-# Caminho do executavel COBOL (usado a partir da Fase 4)
+# Integracao com o nucleo COBOL
 cobol:
   bin-dir: ${COBOL_BIN_DIR:/usr/local/bin}
+  # subprocess = spawn por chamada | ffi = lib compartilhada in-process (transacoes)
+  mode: ${COBOL_MODE:subprocess}
 
 server:
   port: 8080

@@ -103,7 +103,9 @@ core-bancario-cobol/
 ├── cobol/                     # Núcleo: regras e cálculos financeiros
 │   ├── src/
 │   │   ├── amortizacao.cob    # tabela Price/SAC/Americano + IOF + CET
-│   │   ├── transacoes.cob     # depósito / saque / transferência
+│   │   ├── transacaocore.cob  # núcleo chamável de transações (LINKAGE)
+│   │   ├── transacoes.cob     # wrapper subprocesso (CALL ao core)
+│   │   ├── ffi/bridge.c       # ponte C p/ chamar o core in-process (FFI)
 │   │   ├── investimento.cob   # CDB/Poupança: juros compostos + IR regressivo
 │   │   └── fechamento.cob     # batch noturno: juros de cheque especial + reconciliação
 │   ├── tests/                 # baterias de teste por invariantes
@@ -160,6 +162,12 @@ curl -X POST localhost:8080/emprestimos/simular -H 'Content-Type: application/js
 - **Fronteira COBOL isolada.** A API chama os executáveis como subprocesso e troca
   dados em **linhas delimitadas por `;`** via stdin/stdout — COBOL monta JSON mal;
   Java monta o formato. Tudo confinado em `CobolGateway`.
+- **Evolução da fronteira: subprocesso → FFI.** Porque a fronteira ficou isolada, foi
+  possível evoluí-la sem tocar em serviços/controllers/front. O caminho quente
+  (transações) tem dois modos, alternados por `cobol.mode`: **subprocesso** (spawn por
+  chamada) ou **FFI** (chamada in-process à lib COBOL compartilhada
+  `libtransacaoffi.so`, ponte C + JNA). A regra vive uma única vez em
+  `transacaocore.cob`, usada pelos dois caminhos. O compose roda em `ffi`.
 - **Binários COBOL na imagem da API.** No modelo subprocesso a API *exec*uta o
   binário, então eles vivem no mesmo container (compilados no build multi-stage,
   na mesma base que os roda → ABI casado).
