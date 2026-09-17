@@ -46,7 +46,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <h1>Olá, {user?.nome || "bem-vindo"} 👋</h1>
+      <h1>Olá, {user?.nome || "bem-vindo"}</h1>
 
       <div className="stats">
         {isAdmin ? (
@@ -88,9 +88,9 @@ export default function DashboardPage() {
       <div className="card">
         <h2>Ações rápidas</h2>
         <div className="quick">
-          <Link href="/contas">🏦 Ver contas</Link>
-          <Link href="/emprestimos">📉 Simular empréstimo</Link>
-          <Link href="/investimentos">📈 Simular investimento</Link>
+          <Link href="/contas">Ver contas</Link>
+          <Link href="/emprestimos">Simular empréstimo</Link>
+          <Link href="/investimentos">Simular investimento</Link>
         </div>
       </div>
 

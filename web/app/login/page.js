@@ -28,7 +28,13 @@ export default function LoginPage() {
 
   return (
     <div className="auth">
-      <div className="logo">🏦</div>
+      <div className="logo">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary-2)" strokeWidth="1.6"
+             strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 10l9-6 9 6" /><path d="M5 10v9" /><path d="M9 10v9" /><path d="M15 10v9" />
+          <path d="M19 10v9" /><path d="M3 21h18" />
+        </svg>
+      </div>
       <h1>Core Bancário</h1>
       <p className="sub">Núcleo financeiro em COBOL, modernizado</p>
       <div className="card">
