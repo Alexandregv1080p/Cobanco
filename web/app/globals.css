@@ -126,6 +126,15 @@ a:hover { color: #9bb6df; }
 .stat .v.neg { color: var(--neg); }
 .stat .s { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
 
+/* ---------- Gráfico de barras (saldos) ---------- */
+.chart { margin-top: 6px; }
+.bar-row { display: grid; grid-template-columns: 84px 1fr 110px; align-items: center; gap: 12px; padding: 7px 0; }
+.bar-row .lbl { color: var(--muted); font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { height: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 999px; background: var(--primary); transition: width 0.4s ease; }
+.bar-fill.neg { background: var(--neg); }
+.bar-row .val { text-align: right; font-variant-numeric: tabular-nums; font-size: 0.85rem; }
+
 .quick { display: flex; gap: 12px; flex-wrap: wrap; }
 .quick a {
   padding: 11px 16px;

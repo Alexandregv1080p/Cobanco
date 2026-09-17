@@ -41,6 +41,7 @@ public class SecurityConfig {
                         (req, res, ex) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

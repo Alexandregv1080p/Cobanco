@@ -44,6 +44,11 @@ export default function DashboardPage() {
   const saldoTotal = contas.reduce((s, c) => s + Number(c.saldo), 0);
   const limiteTotal = contas.reduce((s, c) => s + Number(c.limite), 0);
 
+  const topContas = [...contas]
+    .sort((a, b) => Math.abs(Number(b.saldo)) - Math.abs(Number(a.saldo)))
+    .slice(0, 8);
+  const maxAbs = Math.max(1, ...topContas.map((c) => Math.abs(Number(c.saldo))));
+
   return (
     <>
       <h1>Olá, {user?.nome || "bem-vindo"}</h1>
@@ -84,6 +89,27 @@ export default function DashboardPage() {
           </>
         )}
       </div>
+
+      {topContas.length > 0 && (
+        <div className="card">
+          <h2>Saldos por conta</h2>
+          <div className="chart">
+            {topContas.map((c) => {
+              const v = Number(c.saldo);
+              const w = (Math.abs(v) / maxAbs) * 100;
+              return (
+                <div className="bar-row" key={c.id}>
+                  <div className="lbl">{c.numero}</div>
+                  <div className="bar-track">
+                    <div className={"bar-fill" + (v < 0 ? " neg" : "")} style={{ width: `${w}%` }} />
+                  </div>
+                  <div className="val">{brl(v)}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="card">
         <h2>Ações rápidas</h2>
