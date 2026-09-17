@@ -5,21 +5,20 @@ import Link from "next/link";
 import { api, brl } from "../lib/api";
 import { useRequireAuth, getUser } from "../lib/auth";
 
-export default function ContasPage() {
+export default function DashboardPage() {
   useRequireAuth();
   const [user, setUser] = useState(null);
   const [contas, setContas] = useState([]);
   const [balancete, setBalancete] = useState(null);
   const [fech, setFech] = useState(null);
-  const [form, setForm] = useState({ numero: "", limite: "" });
   const [erro, setErro] = useState("");
-  const [carregando, setCarregando] = useState(false);
 
   const isAdmin = user?.papel === "ADMIN";
 
-  async function recarregar(u = user) {
+  async function recarregar(u) {
     try {
-      setContas(await api.listarContas());
+      const cs = await api.listarContas();
+      setContas(cs);
       if (u?.papel === "ADMIN") setBalancete(await api.balancete());
     } catch (e) {
       setErro(e.message);
@@ -30,78 +29,107 @@ export default function ContasPage() {
     const u = getUser();
     setUser(u);
     recarregar(u);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  async function criar(e) {
-    e.preventDefault();
-    setErro("");
-    setCarregando(true);
-    try {
-      await api.criarConta({
-        clienteId: user.clienteId,
-        numero: form.numero,
-        limite: form.limite ? Number(form.limite) : 0,
-      });
-      setForm({ numero: "", limite: "" });
-      await recarregar();
-    } catch (e) {
-      setErro(e.message);
-    } finally {
-      setCarregando(false);
-    }
-  }
 
   async function rodarFechamento() {
     setErro("");
     try {
       setFech(await api.fechamento());
-      await recarregar();
+      await recarregar(user);
     } catch (e) {
       setErro(e.message);
     }
   }
 
+  const saldoTotal = contas.reduce((s, c) => s + Number(c.saldo), 0);
+  const limiteTotal = contas.reduce((s, c) => s + Number(c.limite), 0);
+
   return (
     <>
-      <h1>Contas</h1>
+      <h1>Olá, {user?.nome || "bem-vindo"} 👋</h1>
 
-      {user?.clienteId && (
-        <div className="card">
-          <h2>Nova conta</h2>
-          <form onSubmit={criar}>
-            <div className="row">
-              <div>
-                <label>Número da conta</label>
-                <input value={form.numero} onChange={(e) => setForm({ ...form, numero: e.target.value })} required />
-              </div>
-              <div>
-                <label>Limite (cheque especial)</label>
-                <input type="number" step="0.01" min="0" value={form.limite}
-                       onChange={(e) => setForm({ ...form, limite: e.target.value })} />
-              </div>
+      <div className="stats">
+        {isAdmin ? (
+          <>
+            <div className="stat">
+              <div className="k">Contas no banco</div>
+              <div className="v">{contas.length}</div>
             </div>
-            <button disabled={carregando}>{carregando ? "Criando..." : "Criar conta"}</button>
-            {erro && <div className="erro">{erro}</div>}
-          </form>
+            <div className="stat">
+              <div className="k">Caixa do banco</div>
+              <div className="v">{balancete ? brl(balancete.saldoCaixa) : "—"}</div>
+            </div>
+            <div className="stat">
+              <div className="k">Livros contábeis</div>
+              <div className={"v " + (balancete?.equilibrado ? "pos" : "neg")}>
+                {balancete ? (balancete.equilibrado ? "Equilibrado" : "Divergente") : "—"}
+              </div>
+              {balancete && <div className="s">déb. {brl(balancete.totalDebitos)} = créd. {brl(balancete.totalCreditos)}</div>}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="stat">
+              <div className="k">Saldo total</div>
+              <div className={"v " + (saldoTotal < 0 ? "neg" : "pos")}>{brl(saldoTotal)}</div>
+            </div>
+            <div className="stat">
+              <div className="k">Minhas contas</div>
+              <div className="v">{contas.length}</div>
+            </div>
+            <div className="stat">
+              <div className="k">Limite total</div>
+              <div className="v">{brl(limiteTotal)}</div>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="card">
+        <h2>Ações rápidas</h2>
+        <div className="quick">
+          <Link href="/contas">🏦 Ver contas</Link>
+          <Link href="/emprestimos">📉 Simular empréstimo</Link>
+          <Link href="/investimentos">📈 Simular investimento</Link>
+        </div>
+      </div>
+
+      {isAdmin && (
+        <div className="card">
+          <h2>Fechamento diário <span className="muted" style={{ fontSize: "0.6em" }}>(batch COBOL)</span></h2>
+          <p className="muted">
+            Cobra juros de cheque especial nas contas negativas e reconcilia saldo × razão.
+          </p>
+          <button onClick={rodarFechamento}>Rodar fechamento agora</button>
+          {fech && (
+            <p className="ok">
+              {fech.contasProcessadas} contas · juros {brl(fech.totalJuros)} ·{" "}
+              <span className={fech.divergencias === 0 ? "ok" : "erro"}>
+                {fech.divergencias} divergência(s)
+              </span>
+            </p>
+          )}
         </div>
       )}
 
       <div className="card">
-        <h2>{isAdmin ? "Todas as contas" : "Minhas contas"}</h2>
+        <h2 style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          {isAdmin ? "Contas recentes" : "Minhas contas"}
+          <Link href="/contas" style={{ fontSize: "0.75rem", fontWeight: 500 }}>ver todas →</Link>
+        </h2>
+        {erro && <div className="erro">{erro}</div>}
         {contas.length === 0 ? (
-          <p className="muted">Nenhuma conta ainda.</p>
+          <p className="muted">Nenhuma conta ainda. <Link href="/contas">Criar a primeira</Link>.</p>
         ) : (
           <table>
             <thead>
-              <tr><th>Conta</th><th>Titular</th><th>Limite</th><th>Saldo</th></tr>
+              <tr><th>Conta</th><th>Titular</th><th>Saldo</th></tr>
             </thead>
             <tbody>
-              {contas.map((c) => (
+              {contas.slice(0, 6).map((c) => (
                 <tr key={c.id}>
                   <td><Link href={`/contas/${c.id}`}>{c.numero}</Link></td>
                   <td>{c.clienteNome}</td>
-                  <td>{brl(c.limite)}</td>
                   <td>{brl(c.saldo)}</td>
                 </tr>
               ))}
@@ -109,39 +137,6 @@ export default function ContasPage() {
           </table>
         )}
       </div>
-
-      {isAdmin && balancete && (
-        <div className="card">
-          <h2>Balancete <span className="muted" style={{ fontSize: "0.6em" }}>(razão de partidas dobradas)</span></h2>
-          <div className="row">
-            <div className="muted">Total débitos: <strong>{brl(balancete.totalDebitos)}</strong></div>
-            <div className="muted">Total créditos: <strong>{brl(balancete.totalCreditos)}</strong></div>
-            <div className="muted">Caixa do banco: <strong>{brl(balancete.saldoCaixa)}</strong></div>
-          </div>
-          <p className={balancete.equilibrado ? "ok" : "erro"}>
-            {balancete.equilibrado ? "✓ Livros equilibrados (débitos = créditos)" : "✗ Livros desequilibrados"}
-          </p>
-        </div>
-      )}
-
-      {isAdmin && (
-        <div className="card">
-          <h2>Fechamento diário <span className="muted" style={{ fontSize: "0.6em" }}>(batch COBOL)</span></h2>
-          <p className="muted">
-            Cobra juros de cheque especial nas contas negativas e reconcilia saldo × razão.
-            Roda automaticamente à meia-noite; aqui você dispara sob demanda.
-          </p>
-          <button onClick={rodarFechamento}>Rodar fechamento agora</button>
-          {fech && (
-            <p className="ok">
-              {fech.contasProcessadas} contas processadas · juros cobrados {brl(fech.totalJuros)} ·{" "}
-              <span className={fech.divergencias === 0 ? "ok" : "erro"}>
-                {fech.divergencias} divergência(s) de reconciliação
-              </span>
-            </p>
-          )}
-        </div>
-      )}
     </>
   );
 }

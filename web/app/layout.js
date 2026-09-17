@@ -1,6 +1,6 @@
 import "react-phone-number-input/style.css";
 import "./globals.css";
-import Nav from "./Nav";
+import Sidebar from "./Sidebar";
 
 export const metadata = {
   title: "Core Bancário COBOL",
@@ -11,8 +11,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
       <body>
-        <Nav />
-        <main className="container">{children}</main>
+        <div className="app">
+          <Sidebar />
+          <main className="content">
+            <div className="container">{children}</div>
+          </main>
+        </div>
       </body>
     </html>
   );
