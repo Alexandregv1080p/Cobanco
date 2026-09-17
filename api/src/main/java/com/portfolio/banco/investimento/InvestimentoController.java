@@ -3,6 +3,7 @@ package com.portfolio.banco.investimento;
 import com.portfolio.banco.cobol.CobolGateway;
 import com.portfolio.banco.cobol.PontoInvestimento;
 import com.portfolio.banco.cobol.ResultadoInvestimento;
+import com.portfolio.banco.simulacao.SimulacaoService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.web.bind.annotation.*;
@@ -19,15 +20,20 @@ import java.util.List;
 public class InvestimentoController {
 
     private final CobolGateway cobol;
+    private final SimulacaoService historico;
 
-    public InvestimentoController(CobolGateway cobol) {
+    public InvestimentoController(CobolGateway cobol, SimulacaoService historico) {
         this.cobol = cobol;
+        this.historico = historico;
     }
 
     @PostMapping("/simular")
     public SimulacaoResponse simular(@Valid @RequestBody SimularRequest req) {
         ResultadoInvestimento r = cobol.simularInvestimento(
                 req.tipo(), req.valor(), req.taxaMensal(), req.meses());
+
+        historico.registrar("INVESTIMENTO", req.tipo().toUpperCase(), req.valor(),
+                req.meses(), req.taxaMensal(), r.valorFinalLiquido(), r.aliquotaIR());
 
         return new SimulacaoResponse(
                 req.tipo().toUpperCase(), req.valor(), req.meses(),

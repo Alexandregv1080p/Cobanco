@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api, brl } from "../../lib/api";
 import { useRequireAuth } from "../../lib/auth";
 
@@ -11,8 +11,18 @@ export default function EmprestimosPage() {
   useRequireAuth();
   const [form, setForm] = useState({ valor: "100000", taxaMensal: "0.015", prazoMeses: "12", sistema: "PRICE" });
   const [resultado, setResultado] = useState(null);
+  const [hist, setHist] = useState([]);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+
+  async function carregarHist() {
+    try {
+      const todas = await api.simulacoes();
+      setHist(todas.filter((s) => s.categoria === "EMPRESTIMO"));
+    } catch { /* ignora */ }
+  }
+
+  useEffect(() => { carregarHist(); }, []);
 
   async function simular(e) {
     e.preventDefault();
@@ -27,6 +37,7 @@ export default function EmprestimosPage() {
         sistema: form.sistema,
       });
       setResultado(r);
+      carregarHist();
     } catch (e) {
       setErro(e.message);
     } finally {
@@ -96,6 +107,27 @@ export default function EmprestimosPage() {
                   <td>{brl(p.juros)}</td>
                   <td>{brl(p.amortizacao)}</td>
                   <td>{brl(p.saldoDevedor)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {hist.length > 0 && (
+        <div className="card">
+          <h2>Histórico de simulações</h2>
+          <table>
+            <thead>
+              <tr><th>Data</th><th>Simulação</th><th>Total pago</th><th>CET mensal</th></tr>
+            </thead>
+            <tbody>
+              {hist.map((s) => (
+                <tr key={s.id}>
+                  <td>{new Date(s.data).toLocaleString("pt-BR")}</td>
+                  <td>{s.subtipo} · {brl(s.valor)} · {s.prazo}x</td>
+                  <td>{brl(s.resultado)}</td>
+                  <td>{s.resultado2 != null ? pct(s.resultado2) : "—"}</td>
                 </tr>
               ))}
             </tbody>

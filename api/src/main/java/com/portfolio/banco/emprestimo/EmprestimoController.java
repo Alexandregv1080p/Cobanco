@@ -3,6 +3,7 @@ package com.portfolio.banco.emprestimo;
 import com.portfolio.banco.cobol.CobolGateway;
 import com.portfolio.banco.cobol.Parcela;
 import com.portfolio.banco.cobol.ResultadoSimulacao;
+import com.portfolio.banco.simulacao.SimulacaoService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.web.bind.annotation.*;
@@ -19,15 +20,20 @@ import java.util.List;
 public class EmprestimoController {
 
     private final CobolGateway cobol;
+    private final SimulacaoService historico;
 
-    public EmprestimoController(CobolGateway cobol) {
+    public EmprestimoController(CobolGateway cobol, SimulacaoService historico) {
         this.cobol = cobol;
+        this.historico = historico;
     }
 
     @PostMapping("/simular")
     public SimulacaoResponse simular(@Valid @RequestBody SimularRequest req) {
         ResultadoSimulacao r = cobol.amortizar(
                 req.valor(), req.taxaMensal(), req.prazoMeses(), req.sistema());
+
+        historico.registrar("EMPRESTIMO", req.sistema().toUpperCase(), req.valor(),
+                req.prazoMeses(), req.taxaMensal(), r.totalPago(), r.cetMensal());
 
         return new SimulacaoResponse(
                 req.sistema().toUpperCase(), req.valor(), req.prazoMeses(),
