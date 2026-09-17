@@ -1,8 +1,10 @@
 package com.portfolio.banco.common;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -53,6 +55,18 @@ public class GlobalExceptionHandler {
                         f -> f.getDefaultMessage() == null ? "invalido" : f.getDefaultMessage(),
                         (a, b) -> a)));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resp);
+    }
+
+    /** Corpo JSON ausente ou malformado. */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> corpoInvalido(HttpMessageNotReadableException ex) {
+        return body(HttpStatus.BAD_REQUEST, "corpo da requisicao invalido ou ausente");
+    }
+
+    /** Violações de @Validated em parâmetros/paths. */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> violacao(ConstraintViolationException ex) {
+        return body(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     private ResponseEntity<Map<String, Object>> body(HttpStatus status, String msg) {

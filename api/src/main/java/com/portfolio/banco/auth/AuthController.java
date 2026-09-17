@@ -28,15 +28,17 @@ public class AuthController {
         return service.login(req.email(), req.senha());
     }
 
+    @DocumentoConsistente
     public record RegistrarRequest(
             @NotBlank @Pattern(regexp = "FISICA|JURIDICA", message = "tipo deve ser FISICA ou JURIDICA") String tipo,
-            @NotBlank String nome,
-            @NotBlank String documento,   // CPF ou CNPJ
-            @NotBlank String telefone,
-            @NotBlank @Email String email,
-            @NotBlank @Size(min = 6, message = "senha deve ter ao menos 6 caracteres") String senha) {}
+            @NotBlank @Size(max = 120) String nome,
+            @NotBlank @Size(max = 25) String documento,   // CPF ou CNPJ (validado por @DocumentoConsistente)
+            @NotBlank @Pattern(regexp = "\\+?[1-9]\\d{9,14}", message = "telefone invalido") String telefone,
+            @NotBlank @Email @Size(max = 180) String email,
+            @NotBlank @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).{8,72}$",
+                    message = "senha deve ter ao menos 8 caracteres, com letras e numeros") String senha) {}
 
     public record LoginRequest(
-            @NotBlank @Email String email,
-            @NotBlank String senha) {}
+            @NotBlank @Email @Size(max = 180) String email,
+            @NotBlank @Size(max = 72) String senha) {}
 }

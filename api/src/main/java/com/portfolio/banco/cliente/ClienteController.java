@@ -50,8 +50,8 @@ public class ClienteController {
 
     // --- DTOs ---
     public record CriarClienteRequest(
-            @NotBlank String nome,
-            @NotBlank String cpf) {}
+            @NotBlank @jakarta.validation.constraints.Size(max = 120) String nome,
+            @NotBlank @jakarta.validation.constraints.Size(max = 25) String cpf) {}
 
     public record ClienteResponse(Long id, String nome, String cpf, OffsetDateTime createdAt) {
         static ClienteResponse de(Cliente c) {

@@ -2,8 +2,7 @@ package com.portfolio.banco.transacao;
 
 import com.portfolio.banco.cobol.ResultadoTransferencia;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -43,11 +42,14 @@ public class TransacaoController {
     }
 
     // --- DTOs ---
-    public record ValorRequest(@NotNull @DecimalMin(value = "0.01") BigDecimal valor) {}
+    public record ValorRequest(
+            @NotNull @DecimalMin("0.01") @DecimalMax("9999999999999.99")
+            @Digits(integer = 13, fraction = 2) BigDecimal valor) {}
 
     public record TransferenciaRequest(
-            @NotNull Long contaDestinoId,
-            @NotNull @DecimalMin(value = "0.01") BigDecimal valor) {}
+            @NotNull @Positive Long contaDestinoId,
+            @NotNull @DecimalMin("0.01") @DecimalMax("9999999999999.99")
+            @Digits(integer = 13, fraction = 2) BigDecimal valor) {}
 
     public record SaldoResponse(BigDecimal saldo) {}
 

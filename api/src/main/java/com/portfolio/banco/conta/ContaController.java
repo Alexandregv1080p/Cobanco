@@ -5,9 +5,7 @@ import com.portfolio.banco.cliente.Cliente;
 import com.portfolio.banco.cliente.ClienteRepository;
 import com.portfolio.banco.common.NotFoundException;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -75,9 +73,11 @@ public class ContaController {
 
     // --- DTOs ---
     public record CriarContaRequest(
-            @NotNull Long clienteId,
-            @NotBlank String numero,
-            @PositiveOrZero BigDecimal limite) {}
+            @NotNull @Positive Long clienteId,
+            @NotBlank @Size(max = 20) @Pattern(regexp = "[A-Za-z0-9\\-]+",
+                    message = "numero deve conter apenas letras, numeros e hifen") String numero,
+            @PositiveOrZero @DecimalMax("9999999999999.99")
+            @Digits(integer = 13, fraction = 2) BigDecimal limite) {}
 
     public record ContaResponse(
             Long id, String numero, Long clienteId, String clienteNome,

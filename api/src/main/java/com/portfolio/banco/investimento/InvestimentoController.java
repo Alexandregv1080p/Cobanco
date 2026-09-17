@@ -38,9 +38,11 @@ public class InvestimentoController {
     // --- DTOs ---
     public record SimularRequest(
             @NotBlank @Pattern(regexp = "(?i)CDB|POUPANCA", message = "use CDB ou POUPANCA") String tipo,
-            @NotNull @DecimalMin(value = "0.01") BigDecimal valor,
-            @NotNull @DecimalMin(value = "0.0") BigDecimal taxaMensal,
-            @NotNull @Min(1) Integer meses) {}
+            @NotNull @DecimalMin("0.01") @DecimalMax("9999999999999.99")
+            @Digits(integer = 13, fraction = 2) BigDecimal valor,
+            @NotNull @DecimalMin("0.0") @DecimalMax("1.0")
+            @Digits(integer = 1, fraction = 8) BigDecimal taxaMensal,
+            @NotNull @Min(1) @Max(360) Integer meses) {}
 
     public record SimulacaoResponse(
             String tipo, BigDecimal valor, int meses,

@@ -36,7 +36,7 @@ class AuthIntegracaoTest {
     void registro_login_eProtecaoDaApi() throws Exception {
         // registrar -> 200 + token
         String body = mvc.perform(post("/auth/registrar").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tipo\":\"FISICA\",\"nome\":\"Ana\",\"documento\":\"auth-cpf-1\",\"telefone\":\"+5511999990000\",\"email\":\"ana@banco.com\",\"senha\":\"secreta1\"}"))
+                        .content("{\"tipo\":\"FISICA\",\"nome\":\"Ana\",\"documento\":\"" + cpf(1) + "\",\"telefone\":\"+5511999990000\",\"email\":\"ana@banco.com\",\"senha\":\"secreta1\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.papel").value("CLIENTE"))
                 .andExpect(jsonPath("$.token").isNotEmpty())
@@ -62,13 +62,23 @@ class AuthIntegracaoTest {
 
         // email duplicado -> 422 (regra de negocio)
         mvc.perform(post("/auth/registrar").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tipo\":\"FISICA\",\"nome\":\"Outra\",\"documento\":\"auth-cpf-2\",\"telefone\":\"+5511999990001\",\"email\":\"ana@banco.com\",\"senha\":\"secreta1\"}"))
+                        .content("{\"tipo\":\"FISICA\",\"nome\":\"Outra\",\"documento\":\"" + cpf(2) + "\",\"telefone\":\"+5511999990001\",\"email\":\"ana@banco.com\",\"senha\":\"secreta1\"}"))
                 .andExpect(status().isUnprocessableEntity());
+
+        // documento invalido -> 400
+        mvc.perform(post("/auth/registrar").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"tipo\":\"FISICA\",\"nome\":\"Zé\",\"documento\":\"111.111.111-11\",\"telefone\":\"+5511999990002\",\"email\":\"ze@banco.com\",\"senha\":\"secreta1\"}"))
+                .andExpect(status().isBadRequest());
+
+        // senha fraca -> 400
+        mvc.perform(post("/auth/registrar").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"tipo\":\"FISICA\",\"nome\":\"Fraca\",\"documento\":\"" + cpf(9) + "\",\"telefone\":\"+5511999990003\",\"email\":\"fraca@banco.com\",\"senha\":\"12345\"}"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     void ownership_clienteSoAcessaSuasContas() throws Exception {
-        String[] a = registrar("Alice", "own-a", "alice@banco.com");
+        String[] a = registrar("Alice", cpf(3), "alice@banco.com");
         String tokenA = a[0], clienteA = a[1];
 
         // Alice cria uma conta (o clienteId enviado e forcado para o dela)
@@ -79,7 +89,7 @@ class AuthIntegracaoTest {
                 .andReturn().getResponse().getContentAsString();
         long contaA = json.readTree(contaBody).get("id").asLong();
 
-        String tokenB = registrar("Bob", "own-b", "bob@banco.com")[0];
+        String tokenB = registrar("Bob", cpf(4), "bob@banco.com")[0];
 
         // Bob NAO acessa a conta da Alice
         mvc.perform(get("/contas/" + contaA).header("Authorization", "Bearer " + tokenB))
@@ -108,6 +118,25 @@ class AuthIntegracaoTest {
         String tokenAdmin = json.readTree(adminBody).get("token").asText();
         mvc.perform(get("/razao/balancete").header("Authorization", "Bearer " + tokenAdmin))
                 .andExpect(status().isOk());
+    }
+
+    /** Gera um CPF válido (com dígitos verificadores) a partir de uma semente. */
+    private static String cpf(int seed) {
+        int[] n = new int[11];
+        String base = String.format("%09d", 100000000 + seed);
+        for (int i = 0; i < 9; i++) n[i] = base.charAt(i) - '0';
+        n[9] = cpfDig(n, 9, 10);
+        n[10] = cpfDig(n, 10, 11);
+        StringBuilder sb = new StringBuilder();
+        for (int x : n) sb.append(x);
+        return sb.toString();
+    }
+
+    private static int cpfDig(int[] n, int len, int peso) {
+        int s = 0;
+        for (int i = 0; i < len; i++) s += n[i] * (peso - i);
+        int r = s % 11;
+        return r < 2 ? 0 : 11 - r;
     }
 
     /** Registra e devolve [token, clienteId]. */

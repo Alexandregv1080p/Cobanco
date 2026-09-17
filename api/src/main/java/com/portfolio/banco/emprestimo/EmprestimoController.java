@@ -37,9 +37,11 @@ public class EmprestimoController {
 
     // --- DTOs ---
     public record SimularRequest(
-            @NotNull @DecimalMin(value = "0.01") BigDecimal valor,
-            @NotNull @DecimalMin(value = "0.0") BigDecimal taxaMensal,
-            @NotNull @Min(1) Integer prazoMeses,
+            @NotNull @DecimalMin("0.01") @DecimalMax("9999999999999.99")
+            @Digits(integer = 13, fraction = 2) BigDecimal valor,
+            @NotNull @DecimalMin("0.0") @DecimalMax("1.0")
+            @Digits(integer = 1, fraction = 8) BigDecimal taxaMensal,
+            @NotNull @Min(1) @Max(360) Integer prazoMeses,
             @NotBlank @Pattern(regexp = "(?i)PRICE|SAC|AMERICANO",
                     message = "use PRICE, SAC ou AMERICANO") String sistema) {}
 
