@@ -54,8 +54,8 @@ public class ContaController {
     }
 
     @GetMapping("/{id}")
-    public ContaResponse buscar(@PathVariable Long id) {
-        return ContaResponse.de(achar(id));
+    public ContaDetalheResponse buscar(@PathVariable Long id) {
+        return ContaDetalheResponse.de(achar(id));
     }
 
     @GetMapping("/{id}/saldo")
@@ -91,4 +91,19 @@ public class ContaController {
     }
 
     public record SaldoResponse(String numero, BigDecimal saldo) {}
+
+    /** Detalhe da conta com dados do titular. */
+    public record ContaDetalheResponse(
+            Long id, String numero, BigDecimal saldo, BigDecimal limite,
+            BigDecimal taxaChequeEspecial, java.time.OffsetDateTime criadaEm, Titular titular) {
+        static ContaDetalheResponse de(Conta c) {
+            var cli = c.getCliente();
+            return new ContaDetalheResponse(
+                    c.getId(), c.getNumero(), c.getSaldo(), c.getLimite(),
+                    c.getTaxaChequeEspecial(), c.getCreatedAt(),
+                    new Titular(cli.getNome(), cli.getTipo(), cli.getCpf(), cli.getTelefone()));
+        }
+    }
+
+    public record Titular(String nome, String tipo, String documento, String telefone) {}
 }

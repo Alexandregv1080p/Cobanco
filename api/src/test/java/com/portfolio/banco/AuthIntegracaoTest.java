@@ -103,9 +103,12 @@ class AuthIntegracaoTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
 
-        // Alice acessa a propria conta
+        // Alice acessa a propria conta (detalhe com dados do titular)
         mvc.perform(get("/contas/" + contaA).header("Authorization", "Bearer " + tokenA))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.titular.tipo").value("FISICA"))
+                .andExpect(jsonPath("$.titular.documento").exists())
+                .andExpect(jsonPath("$.criadaEm").exists());
 
         // CLIENTE nao ve o balancete (so admin)
         mvc.perform(get("/razao/balancete").header("Authorization", "Bearer " + tokenA))

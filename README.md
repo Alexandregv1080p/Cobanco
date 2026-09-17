@@ -175,7 +175,9 @@ curl -X POST localhost:8080/emprestimos/simular -H 'Content-Type: application/js
   (transações) tem dois modos, alternados por `cobol.mode`: **subprocesso** (spawn por
   chamada) ou **FFI** (chamada in-process à lib COBOL compartilhada
   `libtransacaoffi.so`, ponte C + JNA). A regra vive uma única vez em
-  `transacaocore.cob`, usada pelos dois caminhos. O compose roda em `ffi`.
+  `transacaocore.cob`, usada pelos dois caminhos. **O padrão é `subprocess`** (estável —
+  um erro no COBOL não derruba a API); o `ffi` é uma demonstração experimental
+  (uma falha nativa via JNA pode encerrar a JVM).
 - **Binários COBOL na imagem da API.** No modelo subprocesso a API *exec*uta o
   binário, então eles vivem no mesmo container (compilados no build multi-stage,
   na mesma base que os roda → ABI casado).

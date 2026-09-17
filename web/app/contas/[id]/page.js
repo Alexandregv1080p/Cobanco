@@ -51,13 +51,24 @@ export default function ContaDetalhePage() {
   if (!conta) return <p className="muted">Carregando…</p>;
 
   const negativo = Number(conta.saldo) < 0;
+  const t = conta.titular || {};
+  const pj = t.tipo === "JURIDICA";
+  const pct = (v) => (Number(v) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 }) + "%";
 
   return (
     <>
       <h1>Conta {conta.numero}</h1>
       <div className="card">
-        <div className="muted">Titular: {conta.clienteNome} · Limite: {brl(conta.limite)}</div>
+        <div className="muted">
+          {t.nome} · {pj ? "Pessoa jurídica" : "Pessoa física"} · {pj ? "CNPJ" : "CPF"}: {t.documento || "—"}
+        </div>
         <div className={"saldo" + (negativo ? " negativo" : "")}>{brl(conta.saldo)}</div>
+        <div className="row" style={{ marginTop: 12 }}>
+          <div className="muted">Limite: <strong>{brl(conta.limite)}</strong></div>
+          <div className="muted">Juros cheque especial: <strong>{pct(conta.taxaChequeEspecial)}/mês</strong></div>
+          <div className="muted">Telefone: <strong>{t.telefone || "—"}</strong></div>
+          <div className="muted">Aberta em: <strong>{conta.criadaEm ? new Date(conta.criadaEm).toLocaleDateString("pt-BR") : "—"}</strong></div>
+        </div>
         {msg && <div className={msg.tipo}>{msg.texto}</div>}
       </div>
 
