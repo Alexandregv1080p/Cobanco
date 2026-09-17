@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { api, brl } from "../../../lib/api";
 import { useRequireAuth } from "../../../lib/auth";
+import LineChart from "../../LineChart";
 
 export default function ContaDetalhePage() {
   useRequireAuth();
@@ -71,6 +72,13 @@ export default function ContaDetalhePage() {
         </div>
         {msg && <div className={msg.tipo}>{msg.texto}</div>}
       </div>
+
+      {extrato.length >= 2 && (
+        <div className="card">
+          <h2>Evolução do saldo</h2>
+          <LineChart pontos={[...extrato].reverse().map((t) => t.saldoApos)} />
+        </div>
+      )}
 
       <div className="row">
         <div className="card">

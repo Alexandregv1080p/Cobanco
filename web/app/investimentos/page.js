@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api, brl } from "../../lib/api";
 import { useRequireAuth } from "../../lib/auth";
+import LineChart from "../LineChart";
 
 const pct = (v) =>
   (Number(v) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 }) + "%";
@@ -93,6 +94,9 @@ export default function InvestimentosPage() {
           </div>
           <div className="saldo">{brl(r.valorFinalLiquido)}</div>
           <div className="muted">valor final líquido (após IR)</div>
+
+          <div className="muted" style={{ margin: "14px 0 2px" }}>Crescimento do saldo (bruto)</div>
+          <LineChart pontos={r.evolucao.map((p) => p.saldoBruto)} cor="var(--pos)" />
 
           <table>
             <thead>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api, brl } from "../../lib/api";
 import { useRequireAuth } from "../../lib/auth";
+import LineChart from "../LineChart";
 
 const pct = (v) =>
   (Number(v) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 }) + "%";
@@ -95,6 +96,8 @@ export default function EmprestimosPage() {
             <div className="muted">CET mensal: <strong>{pct(resultado.cetMensal)}</strong></div>
             <div className="muted">CET anual: <strong>{pct(resultado.cetAnual)}</strong></div>
           </div>
+          <div className="muted" style={{ margin: "6px 0 2px" }}>Saldo devedor ao longo das parcelas</div>
+          <LineChart pontos={resultado.parcelas.map((p) => p.saldoDevedor)} />
           <table>
             <thead>
               <tr><th>Nº</th><th>Parcela</th><th>Juros</th><th>Amortização</th><th>Saldo devedor</th></tr>
