@@ -10,6 +10,7 @@ const ITENS = [
   { href: "/contas", ic: "🏦", label: "Contas" },
   { href: "/emprestimos", ic: "📉", label: "Empréstimo" },
   { href: "/investimentos", ic: "📈", label: "Investimento" },
+  { href: "/perfil", ic: "⚙️", label: "Perfil" },
 ];
 
 export default function Sidebar() {

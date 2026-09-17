@@ -14,6 +14,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -117,6 +118,40 @@ class AuthIntegracaoTest {
                 .andReturn().getResponse().getContentAsString();
         String tokenAdmin = json.readTree(adminBody).get("token").asText();
         mvc.perform(get("/razao/balancete").header("Authorization", "Bearer " + tokenAdmin))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void perfil_verEditarETrocarSenha() throws Exception {
+        String token = registrar("Perfil User", cpf(5), "perfil@banco.com")[0];
+
+        mvc.perform(get("/perfil").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("perfil@banco.com"))
+                .andExpect(jsonPath("$.tipo").value("FISICA"));
+
+        // atualiza nome/telefone -> devolve token novo
+        String upd = mvc.perform(put("/perfil").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nome\":\"Perfil Novo\",\"email\":\"perfil@banco.com\",\"telefone\":\"+5511988887777\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String token2 = json.readTree(upd).get("token").asText();
+        mvc.perform(get("/perfil").header("Authorization", "Bearer " + token2))
+                .andExpect(jsonPath("$.nome").value("Perfil Novo"))
+                .andExpect(jsonPath("$.telefone").value("+5511988887777"));
+
+        // senha atual errada -> 401; correta -> 200; login com a nova senha -> 200
+        mvc.perform(put("/perfil/senha").header("Authorization", "Bearer " + token2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"senhaAtual\":\"errada99\",\"novaSenha\":\"novaSenha1\"}"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(put("/perfil/senha").header("Authorization", "Bearer " + token2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"senhaAtual\":\"secreta1\",\"novaSenha\":\"novaSenha1\"}"))
+                .andExpect(status().isOk());
+        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"perfil@banco.com\",\"senha\":\"novaSenha1\"}"))
                 .andExpect(status().isOk());
     }
 

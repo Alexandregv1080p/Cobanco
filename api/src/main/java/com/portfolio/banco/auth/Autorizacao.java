@@ -39,6 +39,12 @@ public class Autorizacao {
         return (a != null && a.getDetails() instanceof Long l) ? l : null;
     }
 
+    /** E-mail do usuário autenticado (subject do token). */
+    public String emailAtual() {
+        Authentication a = auth();
+        return a != null ? a.getName() : null;
+    }
+
     /** Garante que o usuário é dono da conta (ou é admin). */
     public void exigirDono(Long clienteDaConta) {
         if (semAutenticacao() || isAdmin()) return;

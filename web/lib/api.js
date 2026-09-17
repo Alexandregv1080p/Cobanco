@@ -45,6 +45,9 @@ export const api = {
   razao: (id) => req(`/contas/${id}/razao`),
   balancete: () => req("/razao/balancete"),
   fechamento: () => req("/batch/fechamento-diario", { method: "POST" }),
+  perfil: () => req("/perfil"),
+  atualizarPerfil: (body) => req("/perfil", { method: "PUT", body: JSON.stringify(body) }),
+  trocarSenha: (body) => req("/perfil/senha", { method: "PUT", body: JSON.stringify(body) }),
 };
 
 export function brl(v) {
