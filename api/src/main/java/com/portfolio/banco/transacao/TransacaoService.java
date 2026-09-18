@@ -37,26 +37,30 @@ public class TransacaoService {
     }
 
     @Transactional
-    public BigDecimal deposito(Long contaId, BigDecimal valor) {
+    public BigDecimal deposito(Long contaId, BigDecimal valor, String metodo, String detalhe) {
         Conta c = travar(contaId);
         autz.exigirDono(c.getCliente().getId());
         BigDecimal novo = cobol.deposito(c.getSaldo(), valor);
         c.setSaldo(novo);
-        registrar(contaId, null, "DEPOSITO", valor, novo);
+        registrar(contaId, null, "DEPOSITO", valor, novo, metodo(metodo, "ESPECIE"), detalhe);
         razao.deposito(contaId, valor);
         return novo;
     }
 
     @Transactional
-    public BigDecimal saque(Long contaId, BigDecimal valor) {
+    public BigDecimal saque(Long contaId, BigDecimal valor, String metodo, String detalhe) {
         Conta c = travar(contaId);
         autz.exigirDono(c.getCliente().getId());
         // COBOL valida saldo/limite; se insuficiente, lanca RegraNegocioException.
         BigDecimal novo = cobol.saque(c.getSaldo(), valor, c.getLimite());
         c.setSaldo(novo);
-        registrar(contaId, null, "SAQUE", valor, novo);
+        registrar(contaId, null, "SAQUE", valor, novo, metodo(metodo, "ESPECIE"), detalhe);
         razao.saque(contaId, valor);
         return novo;
+    }
+
+    private String metodo(String informado, String padrao) {
+        return (informado == null || informado.isBlank()) ? padrao : informado;
     }
 
     @Transactional
@@ -81,8 +85,8 @@ public class TransacaoService {
         origem.setSaldo(r.novoSaldoOrigem());
         destino.setSaldo(r.novoSaldoDestino());
         // Uma linha de extrato em cada conta.
-        registrar(origemId, destinoId, "TRANSFERENCIA", valor, r.novoSaldoOrigem());
-        registrar(destinoId, origemId, "TRANSFERENCIA", valor, r.novoSaldoDestino());
+        registrar(origemId, destinoId, "TRANSFERENCIA", valor, r.novoSaldoOrigem(), null, null);
+        registrar(destinoId, origemId, "TRANSFERENCIA", valor, r.novoSaldoDestino(), null, null);
         razao.transferencia(origemId, destinoId, valor);
         return r;
     }
@@ -100,13 +104,16 @@ public class TransacaoService {
                 .orElseThrow(() -> new NotFoundException("conta " + id + " nao encontrada"));
     }
 
-    private void registrar(Long contaId, Long destinoId, String tipo, BigDecimal valor, BigDecimal saldoApos) {
+    private void registrar(Long contaId, Long destinoId, String tipo, BigDecimal valor,
+                           BigDecimal saldoApos, String metodo, String detalhe) {
         Transacao t = new Transacao();
         t.setContaId(contaId);
         t.setContaDestinoId(destinoId);
         t.setTipo(tipo);
         t.setValor(valor);
         t.setSaldoApos(saldoApos);
+        t.setMetodo(metodo);
+        t.setDetalhe(detalhe);
         txRepo.save(t);
     }
 }

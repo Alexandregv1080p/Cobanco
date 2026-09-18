@@ -20,13 +20,13 @@ public class TransacaoController {
     }
 
     @PostMapping("/deposito")
-    public SaldoResponse deposito(@PathVariable Long id, @Valid @RequestBody ValorRequest req) {
-        return new SaldoResponse(service.deposito(id, req.valor()));
+    public SaldoResponse deposito(@PathVariable Long id, @Valid @RequestBody DepositoRequest req) {
+        return new SaldoResponse(service.deposito(id, req.valor(), req.metodo(), req.detalhe()));
     }
 
     @PostMapping("/saque")
-    public SaldoResponse saque(@PathVariable Long id, @Valid @RequestBody ValorRequest req) {
-        return new SaldoResponse(service.saque(id, req.valor()));
+    public SaldoResponse saque(@PathVariable Long id, @Valid @RequestBody SaqueRequest req) {
+        return new SaldoResponse(service.saque(id, req.valor(), req.metodo(), req.detalhe()));
     }
 
     @PostMapping("/transferencia")
@@ -42,9 +42,17 @@ public class TransacaoController {
     }
 
     // --- DTOs ---
-    public record ValorRequest(
+    public record DepositoRequest(
             @NotNull @DecimalMin("0.01") @DecimalMax("9999999999999.99")
-            @Digits(integer = 13, fraction = 2) BigDecimal valor) {}
+            @Digits(integer = 13, fraction = 2) BigDecimal valor,
+            @Pattern(regexp = "PIX|BOLETO|CARTAO|ESPECIE", message = "metodo invalido") String metodo,
+            @Size(max = 120) String detalhe) {}
+
+    public record SaqueRequest(
+            @NotNull @DecimalMin("0.01") @DecimalMax("9999999999999.99")
+            @Digits(integer = 13, fraction = 2) BigDecimal valor,
+            @Pattern(regexp = "PIX|TED|ESPECIE", message = "metodo invalido") String metodo,
+            @Size(max = 120) String detalhe) {}
 
     public record TransferenciaRequest(
             @NotNull @Positive Long contaDestinoId,
@@ -57,10 +65,10 @@ public class TransacaoController {
 
     public record ExtratoItem(
             Long id, String tipo, BigDecimal valor, BigDecimal saldoApos,
-            Long contaDestinoId, OffsetDateTime data) {
+            Long contaDestinoId, String metodo, String detalhe, OffsetDateTime data) {
         static ExtratoItem de(Transacao t) {
             return new ExtratoItem(t.getId(), t.getTipo(), t.getValor(),
-                    t.getSaldoApos(), t.getContaDestinoId(), t.getCreatedAt());
+                    t.getSaldoApos(), t.getContaDestinoId(), t.getMetodo(), t.getDetalhe(), t.getCreatedAt());
         }
     }
 }

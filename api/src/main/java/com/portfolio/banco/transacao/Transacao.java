@@ -27,7 +27,15 @@ public class Transacao {
     private Long contaDestinoId;
 
     @Column(nullable = false)
-    private String tipo;   // DEPOSITO | SAQUE | TRANSFERENCIA
+    private String tipo;   // DEPOSITO | SAQUE | TRANSFERENCIA | JUROS_CE
+
+    /** Canal: PIX | BOLETO | CARTAO | ESPECIE (nulo em transferência/juros). */
+    @Column
+    private String metodo;
+
+    /** Detalhe livre, ex.: chave Pix. */
+    @Column
+    private String detalhe;
 
     @Column(nullable = false)
     private BigDecimal valor;

@@ -36,8 +36,10 @@ export const api = {
   criarConta: (body) => req("/contas", { method: "POST", body: JSON.stringify(body) }),
   conta: (id) => req(`/contas/${id}`),
   extrato: (id) => req(`/contas/${id}/extrato`),
-  deposito: (id, valor) => req(`/contas/${id}/deposito`, { method: "POST", body: JSON.stringify({ valor }) }),
-  saque: (id, valor) => req(`/contas/${id}/saque`, { method: "POST", body: JSON.stringify({ valor }) }),
+  deposito: (id, valor, metodo, detalhe) =>
+    req(`/contas/${id}/deposito`, { method: "POST", body: JSON.stringify({ valor, metodo, detalhe }) }),
+  saque: (id, valor, metodo, detalhe) =>
+    req(`/contas/${id}/saque`, { method: "POST", body: JSON.stringify({ valor, metodo, detalhe }) }),
   transferencia: (id, contaDestinoId, valor) =>
     req(`/contas/${id}/transferencia`, { method: "POST", body: JSON.stringify({ contaDestinoId, valor }) }),
   simular: (body) => req("/emprestimos/simular", { method: "POST", body: JSON.stringify(body) }),
