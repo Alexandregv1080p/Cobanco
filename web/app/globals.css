@@ -220,7 +220,9 @@ input:-webkit-autofill:focus {
 .seg button {
   flex: 1; margin: 0; padding: 9px 12px; border-radius: 10px; font-weight: 600;
   background: #0d131b; color: var(--muted); border: 1px solid var(--border); box-shadow: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
 }
+.seg button svg { width: 16px; height: 16px; }
 .seg button.on { background: rgba(63, 111, 176, 0.16); color: #fff; border-color: var(--primary); }
 
 .row { display: flex; gap: 14px; flex-wrap: wrap; }

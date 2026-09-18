@@ -64,7 +64,8 @@ public class TransacaoService {
     }
 
     @Transactional
-    public ResultadoTransferencia transferencia(Long origemId, Long destinoId, BigDecimal valor) {
+    public ResultadoTransferencia transferencia(Long origemId, Long destinoId, BigDecimal valor,
+                                                String metodo, String detalhe) {
         if (origemId.equals(destinoId)) {
             throw new RegraNegocioException("conta de origem e destino devem ser diferentes");
         }
@@ -85,8 +86,9 @@ public class TransacaoService {
         origem.setSaldo(r.novoSaldoOrigem());
         destino.setSaldo(r.novoSaldoDestino());
         // Uma linha de extrato em cada conta.
-        registrar(origemId, destinoId, "TRANSFERENCIA", valor, r.novoSaldoOrigem(), null, null);
-        registrar(destinoId, origemId, "TRANSFERENCIA", valor, r.novoSaldoDestino(), null, null);
+        String canal = metodo(metodo, "INTERNA");
+        registrar(origemId, destinoId, "TRANSFERENCIA", valor, r.novoSaldoOrigem(), canal, detalhe);
+        registrar(destinoId, origemId, "TRANSFERENCIA", valor, r.novoSaldoDestino(), canal, detalhe);
         razao.transferencia(origemId, destinoId, valor);
         return r;
     }

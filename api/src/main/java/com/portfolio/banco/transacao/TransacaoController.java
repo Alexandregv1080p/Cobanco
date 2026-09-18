@@ -32,7 +32,8 @@ public class TransacaoController {
     @PostMapping("/transferencia")
     public TransferenciaResponse transferencia(@PathVariable Long id,
                                                @Valid @RequestBody TransferenciaRequest req) {
-        ResultadoTransferencia r = service.transferencia(id, req.contaDestinoId(), req.valor());
+        ResultadoTransferencia r = service.transferencia(id, req.contaDestinoId(), req.valor(),
+                req.metodo(), req.detalhe());
         return new TransferenciaResponse(r.novoSaldoOrigem(), r.novoSaldoDestino());
     }
 
@@ -57,7 +58,9 @@ public class TransacaoController {
     public record TransferenciaRequest(
             @NotNull @Positive Long contaDestinoId,
             @NotNull @DecimalMin("0.01") @DecimalMax("9999999999999.99")
-            @Digits(integer = 13, fraction = 2) BigDecimal valor) {}
+            @Digits(integer = 13, fraction = 2) BigDecimal valor,
+            @Pattern(regexp = "PIX|TED|INTERNA", message = "metodo invalido") String metodo,
+            @Size(max = 120) String detalhe) {}
 
     public record SaldoResponse(BigDecimal saldo) {}
 

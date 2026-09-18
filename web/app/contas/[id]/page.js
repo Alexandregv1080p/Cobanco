@@ -710,8 +710,11 @@ function ModalPagamento({ aberto, onFechar, onConfirmar, titulo, valor, saldoAtu
   );
 }
 
-// ─── Modal simples (transferência) ───────────────────────────────────────────
-function ModalSimples({ aberto, onFechar, onConfirmar, carregando, titulo, children }) {
+// ─── Modal de transferência (review → comprovante) ────────────────────────────
+function ModalSimples({ aberto, onFechar, onConfirmar, carregando, titulo,
+                        labelConfirmar = "Confirmar", children, sucesso }) {
+  const [fase, setFase] = useState("review");
+  useEffect(() => { if (aberto) setFase("review"); }, [aberto]);
   useEffect(() => {
     if (!aberto) return;
     const esc = (e) => { if (e.key === "Escape" && !carregando) onFechar(); };
@@ -719,21 +722,35 @@ function ModalSimples({ aberto, onFechar, onConfirmar, carregando, titulo, child
     return () => window.removeEventListener("keydown", esc);
   }, [aberto, carregando, onFechar]);
   if (!aberto) return null;
+
+  async function conf() {
+    try { await onConfirmar(); setFase("sucesso"); } catch (_) { /* erro tratado pelo pai */ }
+  }
+
   return (
     <div className="mpag-overlay" onClick={() => !carregando && onFechar()}>
       <div className="mpag-box" onClick={(e) => e.stopPropagation()}>
         <div className="mpag-header">
-          <span className="mpag-titulo">{titulo}</span>
+          <span className="mpag-titulo">{fase === "sucesso" ? "Comprovante" : titulo}</span>
           <button className="mpag-fechar" onClick={() => !carregando && onFechar()}>✕</button>
         </div>
         <div className="mpag-corpo">
-          {children}
-          <div style={{ display:"flex", gap:10, marginTop:20 }}>
-            <button className="mpag-btn-sec" onClick={onFechar} disabled={carregando}>Cancelar</button>
-            <button className="mpag-btn-deposito" onClick={onConfirmar} disabled={carregando}>
-              {carregando ? "Processando…" : "Confirmar transferência"}
-            </button>
-          </div>
+          {fase === "review" ? (
+            <>
+              {children}
+              <div style={{ display:"flex", gap:10, marginTop:20 }}>
+                <button className="mpag-btn-sec" onClick={onFechar} disabled={carregando}>Cancelar</button>
+                <button className="mpag-btn-deposito" onClick={conf} disabled={carregando}>
+                  {carregando ? "Processando…" : labelConfirmar}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {sucesso}
+              <button className="mpag-btn-pri" style={{ marginTop:20 }} onClick={onFechar}>Fechar</button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -753,7 +770,7 @@ export default function ContaDetalhePage() {
 
   const [dep, setDep]     = useState("");
   const [saq, setSaq]     = useState("");
-  const [transf, setTransf] = useState({ destino:"", valor:"" });
+  const [transf, setTransf] = useState({ destino:"", valor:"", metodo:"PIX", descricao:"" });
 
   const [modalDep,    setModalDep]    = useState(false);
   const [modalSaq,    setModalSaq]    = useState(false);
@@ -916,8 +933,25 @@ export default function ContaDetalhePage() {
       </div>
 
       {/* Transferência */}
-      <div className="card">
+      <div className="card pg-op-card">
+        <div className="pg-op-ico" style={{ background:"rgba(63,111,176,0.15)", color:"var(--primary-2)" }}>⇄</div>
         <h2>Transferência</h2>
+        <p className="muted" style={{ fontSize:"0.88rem", margin:"0 0 8px" }}>
+          Envie para outra conta do banco via Pix (instantâneo) ou TED.
+        </p>
+
+        <label>Como transferir</label>
+        <div className="seg" style={{ marginBottom:4 }}>
+          <button type="button" className={transf.metodo === "PIX" ? "on" : ""}
+            onClick={() => setTransf({ ...transf, metodo: "PIX" })}>
+            <IcoPix /> Pix · instantâneo
+          </button>
+          <button type="button" className={transf.metodo === "TED" ? "on" : ""}
+            onClick={() => setTransf({ ...transf, metodo: "TED" })}>
+            <IcoBanco /> TED · 1 dia útil
+          </button>
+        </div>
+
         <div className="row">
           <div>
             <label>Conta destino</label>
@@ -938,9 +972,21 @@ export default function ContaDetalhePage() {
             </div>
           </div>
         </div>
+        <label>Descrição <span className="muted">(opcional)</span></label>
+        <input maxLength={120} placeholder="ex.: aluguel, divisão da conta…" value={transf.descricao}
+          onChange={(e) => setTransf({ ...transf, descricao: e.target.value })} />
+
+        {transf.valor && Number(transf.valor) > 0 && (
+          <div className="pg-info-row" style={{ borderBottom:"none", marginTop:8 }}>
+            <span className="muted">Saldo após transferência</span>
+            <span style={{ color: Number(conta.saldo)-Number(transf.valor) < 0 ? "var(--neg)" : "var(--pos)", fontWeight:700, fontVariantNumeric:"tabular-nums" }}>
+              {brl(Number(conta.saldo) - Number(transf.valor))}
+            </span>
+          </div>
+        )}
         {erroTransf && <span className="campo-erro">{erroTransf}</span>}
         <button disabled={!transf.destino || !transf.valor} onClick={abrirTransf} style={{ marginTop:16 }}>
-          Transferir
+          Revisar transferência
         </button>
       </div>
 
@@ -1024,13 +1070,33 @@ export default function ContaDetalhePage() {
 
       <ModalSimples
         aberto={modalTransf}
-        onFechar={() => { if (!carregando) setModalTransf(false); }}
+        onFechar={() => { if (!carregando) { setModalTransf(false); setTransf({ destino:"", valor:"", metodo:"PIX", descricao:"" }); } }}
         onConfirmar={() => executar(
-          () => api.transferencia(id, Number(transf.destino), Number(transf.valor)),
-          () => { setTransf({ destino:"", valor:"" }); setModalTransf(false); }
+          () => api.transferencia(id, Number(transf.destino), Number(transf.valor), transf.metodo, transf.descricao || null),
+          () => {}
         )}
         carregando={carregando}
-        titulo="Confirmar Transferência"
+        titulo="Confirmar transferência"
+        labelConfirmar={"Transferir via " + (transf.metodo === "PIX" ? "Pix" : "TED")}
+        sucesso={
+          <div>
+            <div style={{ textAlign:"center", marginBottom:16 }}>
+              <div className="mpag-sucesso-ico" style={{ margin:"0 auto 14px" }}>✓</div>
+              <h3 style={{ margin:"0 0 4px", color:"#fff", fontSize:"1.2rem" }}>Transferência realizada!</h3>
+              <p className="muted" style={{ margin:0 }}>
+                {brl(transf.valor)} enviado via <strong style={{ color:"var(--text)" }}>{transf.metodo === "PIX" ? "Pix" : "TED"}</strong>
+              </p>
+            </div>
+            <div className="mpag-resumo">
+              <LinhaResumo label="De"    valor={conta.numero} />
+              <LinhaResumo label="Para"  valor={ctDest ? `${ctDest.numero} — ${ctDest.clienteNome}` : "—"} />
+              <LinhaResumo label="Canal" valor={transf.metodo === "PIX" ? "Pix" : "TED"} />
+              {transf.descricao && <LinhaResumo label="Descrição" valor={transf.descricao} />}
+              <LinhaResumo label="Valor" valor={brl(transf.valor)} destaque />
+              <LinhaResumo label="Data"  valor={new Date().toLocaleString("pt-BR")} />
+            </div>
+          </div>
+        }
       >
         <div style={{ textAlign:"center", marginBottom:16 }}>
           <div style={{ width:52, height:52, borderRadius:16, background:"rgba(63,111,176,0.15)",
@@ -1041,6 +1107,8 @@ export default function ContaDetalhePage() {
         <div className="mpag-resumo">
           <LinhaResumo label="Conta origem"  valor={conta.numero} />
           <LinhaResumo label="Conta destino" valor={ctDest ? `${ctDest.numero} — ${ctDest.clienteNome}` : "—"} />
+          <LinhaResumo label="Canal"         valor={transf.metodo === "PIX" ? "Pix · instantâneo" : "TED · 1 dia útil"} />
+          {transf.descricao && <LinhaResumo label="Descrição" valor={transf.descricao} />}
           <LinhaResumo label="Saldo atual"   valor={brl(conta.saldo)} />
           <LinhaResumo label="Valor"         valor={brl(transf.valor)} destaque />
           <div style={{ height:1, background:"var(--border)", margin:"4px 0" }} />
