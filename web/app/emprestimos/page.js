@@ -77,7 +77,9 @@ export default function EmprestimosPage() {
               </select>
             </div>
           </div>
-          <button disabled={carregando}>{carregando ? "Calculando…" : "Simular"}</button>
+          <button style={{ width: "100%" }} disabled={carregando}>
+            {carregando ? "Calculando…" : "Simular"}
+          </button>
           {erro && <div className="erro">{erro}</div>}
         </form>
       </div>
