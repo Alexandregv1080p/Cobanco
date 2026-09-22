@@ -28,6 +28,10 @@ const icones = {
   fechamento: (
     <svg {...S}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
   ),
+  prova: (
+    <svg {...S}><path d="M12 3v18" /><path d="M6 8l-3 6a3 3 0 0 0 6 0z" />
+      <path d="M18 8l-3 6a3 3 0 0 0 6 0z" /><path d="M6 8h12" /></svg>
+  ),
 };
 
 const marca = (
@@ -44,6 +48,7 @@ const ITENS = [
   { href: "/emprestimos", key: "emprestimo", label: "Empréstimo" },
   { href: "/investimentos", key: "investimento", label: "Investimento" },
   { href: "/fechamento", key: "fechamento", label: "Fechamento" },
+  { href: "/prova", key: "prova", label: "Prova de Exatidão" },
   { href: "/perfil", key: "perfil", label: "Perfil" },
 ];
 
