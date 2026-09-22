@@ -36,15 +36,16 @@ export default function LoginPage() {
 
   return (
     <div className="auth">
-      <div className="logo">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary-2)" strokeWidth="1.6"
+      <span className="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
              strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 10l9-6 9 6" /><path d="M5 10v9" /><path d="M9 10v9" /><path d="M15 10v9" />
           <path d="M19 10v9" /><path d="M3 21h18" />
         </svg>
-      </div>
-      <h1>Core Bancário</h1>
-      <p className="sub">Núcleo financeiro em COBOL, modernizado</p>
+        Core Bancário · núcleo COBOL
+      </span>
+      <h1>Seu banco, com o<br />núcleo em COBOL.</h1>
+      <p className="sub">Lógica financeira crítica em COBOL, exposta por uma arquitetura web moderna.</p>
       <div className="card">
         <form onSubmit={entrar}>
           <label>E-mail</label>

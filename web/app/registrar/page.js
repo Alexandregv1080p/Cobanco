@@ -66,15 +66,16 @@ export default function RegistrarPage() {
 
   return (
     <div className="auth">
-      <div className="logo">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary-2)" strokeWidth="1.6"
+      <span className="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
              strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 10l9-6 9 6" /><path d="M5 10v9" /><path d="M9 10v9" /><path d="M15 10v9" />
           <path d="M19 10v9" /><path d="M3 21h18" />
         </svg>
-      </div>
-      <h1>Criar conta</h1>
-      <p className="sub">Abra sua conta no Core Bancário</p>
+        Comece agora · leva 1 minuto
+      </span>
+      <h1>Abra sua conta<br />no Core Bancário.</h1>
+      <p className="sub">Pessoa física ou jurídica — cadastro rápido e seguro.</p>
       <div className="card">
         <form onSubmit={criar}>
           <label>Tipo de conta</label>
