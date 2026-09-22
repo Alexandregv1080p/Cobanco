@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import PhoneInput from "react-phone-number-input";
 import { api } from "../../lib/api";
 import { setSession } from "../../lib/auth";
+import { mascaraDocumento, validaDocumento, senhaForte } from "../../lib/validacao";
 
 export default function RegistrarPage() {
   const router = useRouter();
@@ -21,13 +22,20 @@ export default function RegistrarPage() {
     e.preventDefault();
     setErro("");
 
-    const digitos = form.documento.replace(/\D/g, "").length;
-    if (pj ? digitos !== 14 : digitos !== 11) {
-      setErro(pj ? "CNPJ deve ter 14 dígitos" : "CPF deve ter 11 dígitos");
+    if (!form.nome.trim() || form.nome.trim().length < 3) {
+      setErro(pj ? "informe a razão social" : "informe o nome completo");
       return;
     }
-    if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(form.senha)) {
-      setErro("senha deve ter ao menos 8 caracteres, com letras e números");
+    if (!validaDocumento(tipo, form.documento)) {
+      setErro(pj ? "CNPJ inválido — verifique os dígitos" : "CPF inválido — verifique os dígitos");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      setErro("e-mail inválido");
+      return;
+    }
+    if (!senhaForte(form.senha)) {
+      setErro("senha deve ter de 8 a 72 caracteres, com letras e números");
       return;
     }
     if (form.senha !== form.confirmar) {
@@ -71,10 +79,12 @@ export default function RegistrarPage() {
         <form onSubmit={criar}>
           <label>Tipo de conta</label>
           <div className="seg">
-            <button type="button" className={!pj ? "on" : ""} onClick={() => setTipo("FISICA")}>
+            <button type="button" className={!pj ? "on" : ""}
+              onClick={() => { setTipo("FISICA"); setForm({ ...form, documento: "" }); }}>
               Pessoa física
             </button>
-            <button type="button" className={pj ? "on" : ""} onClick={() => setTipo("JURIDICA")}>
+            <button type="button" className={pj ? "on" : ""}
+              onClick={() => { setTipo("JURIDICA"); setForm({ ...form, documento: "" }); }}>
               Pessoa jurídica
             </button>
           </div>
@@ -83,9 +93,12 @@ export default function RegistrarPage() {
           <input value={form.nome} maxLength={120} onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
 
           <label>{pj ? "CNPJ" : "CPF"}</label>
-          <input value={form.documento} maxLength={18} inputMode="numeric"
+          <input value={form.documento} maxLength={pj ? 18 : 14} inputMode="numeric"
                  placeholder={pj ? "00.000.000/0000-00" : "000.000.000-00"}
-                 onChange={(e) => setForm({ ...form, documento: e.target.value })} required />
+                 onChange={(e) => setForm({ ...form, documento: mascaraDocumento(tipo, e.target.value) })} required />
+          {form.documento && !validaDocumento(tipo, form.documento) && (
+            <span className="campo-erro">{pj ? "CNPJ" : "CPF"} incompleto ou inválido</span>
+          )}
 
           <label>Telefone</label>
           <PhoneInput

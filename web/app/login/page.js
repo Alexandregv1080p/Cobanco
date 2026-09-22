@@ -15,6 +15,14 @@ export default function LoginPage() {
   async function entrar(e) {
     e.preventDefault();
     setErro("");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      setErro("e-mail inválido");
+      return;
+    }
+    if (!form.senha) {
+      setErro("informe a senha");
+      return;
+    }
     setCarregando(true);
     try {
       setSession(await api.login(form));

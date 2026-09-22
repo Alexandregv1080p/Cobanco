@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { api, brl } from "../../../lib/api";
 import { useRequireAuth } from "../../../lib/auth";
 import LineChart from "../../LineChart";
+import CampoMoeda from "../../CampoMoeda";
 
 // ─── Ícones SVG ───────────────────────────────────────────────────────────────
 const IcoCartao = () => (
@@ -882,12 +883,8 @@ export default function ContaDetalhePage() {
             Adicione fundos via cartão, PIX ou boleto.
           </p>
           <label>Valor a depositar</label>
-          <div className="pg-input-wrap">
-            <span className="pg-input-pre">R$</span>
-            <input type="number" step="0.01" min="0.01" placeholder="0,00" value={dep}
-              onChange={(e) => { setDep(e.target.value); setErroDep(""); }}
-              onKeyDown={(e) => e.key === "Enter" && abrirDep()} />
-          </div>
+          <CampoMoeda value={dep} onChange={(v) => { setDep(v); setErroDep(""); }}
+            onKeyDown={(e) => e.key === "Enter" && abrirDep()} />
           {erroDep && <span className="campo-erro">{erroDep}</span>}
           <div className="pg-info-row">
             <span className="muted">Saldo atual</span>
@@ -909,12 +906,8 @@ export default function ContaDetalhePage() {
             Retire via PIX, conta bancária ou em espécie.
           </p>
           <label>Valor a sacar</label>
-          <div className="pg-input-wrap">
-            <span className="pg-input-pre">R$</span>
-            <input type="number" step="0.01" min="0.01" placeholder="0,00" value={saq}
-              onChange={(e) => { setSaq(e.target.value); setErroSaq(""); }}
-              onKeyDown={(e) => e.key === "Enter" && abrirSaq()} />
-          </div>
+          <CampoMoeda value={saq} onChange={(v) => { setSaq(v); setErroSaq(""); }}
+            onKeyDown={(e) => e.key === "Enter" && abrirSaq()} />
           {erroSaq && <span className="campo-erro">{erroSaq}</span>}
           <div className="pg-info-row">
             <span className="muted">Disponível para saque</span>
@@ -965,11 +958,7 @@ export default function ContaDetalhePage() {
           </div>
           <div>
             <label>Valor</label>
-            <div className="pg-input-wrap">
-              <span className="pg-input-pre">R$</span>
-              <input type="number" step="0.01" min="0.01" placeholder="0,00" value={transf.valor}
-                onChange={(e) => { setTransf({ ...transf, valor: e.target.value }); setErroTransf(""); }} />
-            </div>
+            <CampoMoeda value={transf.valor} onChange={(v) => { setTransf({ ...transf, valor: v }); setErroTransf(""); }} />
           </div>
         </div>
         <label>Descrição <span className="muted">(opcional)</span></label>

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { api, brl } from "../../lib/api";
 import { useRequireAuth } from "../../lib/auth";
 import LineChart from "../LineChart";
+import CampoMoeda from "../CampoMoeda";
+import { taxaValida } from "../../lib/validacao";
 
 const pct = (v) =>
   (Number(v) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 }) + "%";
@@ -28,6 +30,10 @@ export default function InvestimentosPage() {
   async function simular(e) {
     e.preventDefault();
     setErro("");
+    if (!(Number(form.valor) > 0)) { setErro("informe um valor maior que zero"); return; }
+    if (!taxaValida(form.taxaMensal)) { setErro("taxa mensal deve ser fração entre 0 e 1 (ex.: 0.01)"); return; }
+    const m = Number(form.meses);
+    if (!Number.isInteger(m) || m < 1 || m > 360) { setErro("prazo deve ser de 1 a 360 meses"); return; }
     setR(null);
     setCarregando(true);
     try {
@@ -62,13 +68,17 @@ export default function InvestimentosPage() {
             </div>
             <div>
               <label>Valor aplicado</label>
-              <input type="number" step="0.01" value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} required />
+              <CampoMoeda value={form.valor} onChange={(v) => setForm({ ...form, valor: v })} />
             </div>
           </div>
           <div className="row">
             <div>
               <label>Taxa mensal (fração, ex.: 0.01 = 1%)</label>
-              <input type="number" step="0.0001" value={form.taxaMensal} onChange={(e) => setForm({ ...form, taxaMensal: e.target.value })} required />
+              <input type="number" step="0.0001" min="0" max="1" value={form.taxaMensal}
+                     onChange={(e) => setForm({ ...form, taxaMensal: e.target.value })} required />
+              {form.taxaMensal !== "" && !taxaValida(form.taxaMensal) && (
+                <span className="campo-erro">taxa deve ser fração entre 0 e 1</span>
+              )}
             </div>
             <div>
               <label>Prazo (meses)</label>

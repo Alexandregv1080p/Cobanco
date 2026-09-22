@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { api, brl } from "../../lib/api";
 import { useRequireAuth } from "../../lib/auth";
+import CampoMoeda from "../CampoMoeda";
 
 const pct = (v) => (Number(v) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%";
 
@@ -18,7 +19,13 @@ export default function CreditoPage() {
 
   async function analisar(e) {
     e.preventDefault();
-    setErro(""); setRes(null); setCarregando(true);
+    setErro("");
+    if (!(Number(form.renda) > 0)) { setErro("informe a renda mensal"); return; }
+    if (!(Number(form.valor) > 0)) { setErro("informe o valor solicitado"); return; }
+    const p = Number(form.prazoMeses);
+    if (!Number.isInteger(p) || p < 1 || p > 360) { setErro("prazo deve ser de 1 a 360 meses"); return; }
+    if (Number(form.saldoMedio) < 0) { setErro("saldo médio não pode ser negativo"); return; }
+    setRes(null); setCarregando(true);
     try {
       const r = await api.analisarCredito({
         renda: Number(form.renda), valor: Number(form.valor),
@@ -50,13 +57,11 @@ export default function CreditoPage() {
           <div className="row">
             <div>
               <label>Renda mensal</label>
-              <input type="number" step="0.01" value={form.renda}
-                onChange={(e) => setForm({ ...form, renda: e.target.value })} required />
+              <CampoMoeda value={form.renda} onChange={(v) => setForm({ ...form, renda: v })} />
             </div>
             <div>
               <label>Valor solicitado</label>
-              <input type="number" step="0.01" value={form.valor}
-                onChange={(e) => setForm({ ...form, valor: e.target.value })} required />
+              <CampoMoeda value={form.valor} onChange={(v) => setForm({ ...form, valor: v })} />
             </div>
           </div>
           <div className="row">
@@ -67,8 +72,7 @@ export default function CreditoPage() {
             </div>
             <div>
               <label>Saldo médio em conta</label>
-              <input type="number" step="0.01" value={form.saldoMedio}
-                onChange={(e) => setForm({ ...form, saldoMedio: e.target.value })} required />
+              <CampoMoeda value={form.saldoMedio} onChange={(v) => setForm({ ...form, saldoMedio: v })} />
             </div>
           </div>
           <button style={{ width: "100%" }} disabled={carregando}>

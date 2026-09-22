@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { api, brl } from "../../lib/api";
 import { useRequireAuth } from "../../lib/auth";
+import CampoMoeda from "../CampoMoeda";
+import { taxaValida } from "../../lib/validacao";
 
 const pct = (v) => (Number(v) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%";
 
@@ -42,7 +44,12 @@ export default function CompararPage() {
 
   async function comparar(e) {
     e.preventDefault();
-    setErro(""); setCdb(null); setPoup(null); setCarregando(true);
+    setErro("");
+    if (!(Number(form.valor) > 0)) { setErro("informe um valor maior que zero"); return; }
+    const m = Number(form.meses);
+    if (!Number.isInteger(m) || m < 1 || m > 360) { setErro("prazo deve ser de 1 a 360 meses"); return; }
+    if (!taxaValida(form.taxaCDB) || !taxaValida(form.taxaPoup)) { setErro("as taxas devem ser frações entre 0 e 1"); return; }
+    setCdb(null); setPoup(null); setCarregando(true);
     const base = { valor: Number(form.valor), meses: Number(form.meses) };
     try {
       const [rc, rp] = await Promise.all([
@@ -77,8 +84,7 @@ export default function CompararPage() {
           <div className="row">
             <div>
               <label>Valor aplicado</label>
-              <input type="number" step="0.01" value={form.valor}
-                onChange={(e) => setForm({ ...form, valor: e.target.value })} required />
+              <CampoMoeda value={form.valor} onChange={(v) => setForm({ ...form, valor: v })} />
             </div>
             <div>
               <label>Prazo (meses)</label>
@@ -89,13 +95,15 @@ export default function CompararPage() {
           <div className="row">
             <div>
               <label>Taxa do CDB (mensal, ex.: 0.01 = 1%)</label>
-              <input type="number" step="0.0001" value={form.taxaCDB}
+              <input type="number" step="0.0001" min="0" max="1" value={form.taxaCDB}
                 onChange={(e) => setForm({ ...form, taxaCDB: e.target.value })} required />
+              {form.taxaCDB !== "" && !taxaValida(form.taxaCDB) && <span className="campo-erro">fração entre 0 e 1</span>}
             </div>
             <div>
               <label>Taxa da Poupança (mensal, ex.: 0.005 = 0,5%)</label>
-              <input type="number" step="0.0001" value={form.taxaPoup}
+              <input type="number" step="0.0001" min="0" max="1" value={form.taxaPoup}
                 onChange={(e) => setForm({ ...form, taxaPoup: e.target.value })} required />
+              {form.taxaPoup !== "" && !taxaValida(form.taxaPoup) && <span className="campo-erro">fração entre 0 e 1</span>}
             </div>
           </div>
           <button style={{ width: "100%" }} disabled={carregando}>

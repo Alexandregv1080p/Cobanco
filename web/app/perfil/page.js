@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import PhoneInput from "react-phone-number-input";
 import { api } from "../../lib/api";
 import { useRequireAuth, setSession, getUser } from "../../lib/auth";
+import { senhaForte } from "../../lib/validacao";
 
 export default function PerfilPage() {
   useRequireAuth();
@@ -34,6 +35,14 @@ export default function PerfilPage() {
   async function salvar(e) {
     e.preventDefault();
     setMsg(null);
+    if (!nome.trim() || nome.trim().length < 3) {
+      setMsg({ tipo: "erro", texto: "informe o nome" });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setMsg({ tipo: "erro", texto: "e-mail inválido" });
+      return;
+    }
     if (telefone && !/^\+?[1-9]\d{9,14}$/.test(telefone)) {
       setMsg({ tipo: "erro", texto: "telefone inválido" });
       return;
@@ -51,8 +60,12 @@ export default function PerfilPage() {
   async function trocarSenha(e) {
     e.preventDefault();
     setPwMsg(null);
-    if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(pw.nova)) {
-      setPwMsg({ tipo: "erro", texto: "a nova senha deve ter ao menos 8 caracteres, com letras e números" });
+    if (!senhaForte(pw.nova)) {
+      setPwMsg({ tipo: "erro", texto: "a nova senha deve ter de 8 a 72 caracteres, com letras e números" });
+      return;
+    }
+    if (pw.nova === pw.atual) {
+      setPwMsg({ tipo: "erro", texto: "a nova senha deve ser diferente da atual" });
       return;
     }
     if (pw.nova !== pw.conf) {
