@@ -25,6 +25,9 @@ const icones = {
   perfil: (
     <svg {...S}><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
   ),
+  fechamento: (
+    <svg {...S}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+  ),
 };
 
 const marca = (
@@ -40,6 +43,7 @@ const ITENS = [
   { href: "/contas", key: "contas", label: "Contas" },
   { href: "/emprestimos", key: "emprestimo", label: "Empréstimo" },
   { href: "/investimentos", key: "investimento", label: "Investimento" },
+  { href: "/fechamento", key: "fechamento", label: "Fechamento" },
   { href: "/perfil", key: "perfil", label: "Perfil" },
 ];
 
