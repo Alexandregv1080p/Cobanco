@@ -51,8 +51,8 @@ sequenceDiagram
 
     W->>A: POST /contas/1/saque {valor}
     A->>DB: SELECT ... FOR UPDATE (trava a conta)
-    A->>Cb: stdin "SAQUE;valor;saldo;0;limite"
-    Cb-->>A: stdout "OK;novo_saldo"  (ou "ERRO;saldo insuficiente")
+    A->>Cb: stdin "SAQUE#59;valor#59;saldo#59;0#59;limite"
+    Cb-->>A: stdout "OK#59;novo_saldo"  (ou "ERRO#59;saldo insuficiente")
     A->>DB: UPDATE saldo + INSERT extrato
     A-->>W: 200 {saldo}   (ou 422 {message})
 ```
