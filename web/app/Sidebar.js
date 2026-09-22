@@ -38,6 +38,9 @@ const icones = {
   contabil: (
     <svg {...S}><path d="M4 4h16v4H4z" /><path d="M6 8v12" /><path d="M12 8v12" /><path d="M18 8v12" /><path d="M4 20h16" /></svg>
   ),
+  comparar: (
+    <svg {...S}><path d="M3 3v18h18" /><path d="M7 15l4-6 4 3 5-8" /></svg>
+  ),
 };
 
 const marca = (
@@ -54,6 +57,7 @@ const ITENS = [
   { href: "/emprestimos", key: "emprestimo", label: "Empréstimo" },
   { href: "/credito", key: "credito", label: "Crédito" },
   { href: "/investimentos", key: "investimento", label: "Investimento" },
+  { href: "/comparar", key: "comparar", label: "Comparar" },
   { href: "/fechamento", key: "fechamento", label: "Fechamento" },
   { href: "/prova", key: "prova", label: "Prova de Exatidão" },
   { href: "/contabil", key: "contabil", label: "Contábil" },
