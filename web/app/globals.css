@@ -37,8 +37,21 @@ a:hover { color: #5eead4; }
 
 /* ---------- App shell + Sidebar ---------- */
 .app { display: flex; min-height: 100vh; }
-.content { flex: 1; min-width: 0; }
-.container { max-width: 1080px; margin: 0 auto; padding: 32px 28px 64px; }
+.content { flex: 1; min-width: 0; position: relative; }
+/* glow suave no topo do conteúdo — mesma linguagem da landing */
+.content::before {
+  content: "";
+  position: fixed;
+  top: -180px;
+  right: 6%;
+  width: min(1100px, 70vw);
+  height: 460px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(20, 184, 166, 0.10), transparent 70%);
+}
+.container { max-width: 1560px; margin: 0 auto; padding: 40px 44px 72px; }
+@media (max-width: 900px) { .container { padding: 28px 18px 56px; } }
 
 .sidebar {
   width: 240px;
@@ -116,9 +129,16 @@ a:hover { color: #5eead4; }
 .stat {
   background: linear-gradient(180deg, var(--surface-2), var(--surface));
   border: 1px solid var(--border);
+  border-top: 2px solid rgba(20, 184, 166, 0.55);
   border-radius: 14px;
-  padding: 18px 20px;
+  padding: 20px 22px;
   box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px -18px rgba(0, 0, 0, 0.6);
+  border-top-color: var(--primary-2);
 }
 .stat .k { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); font-weight: 700; }
 .stat .v { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 8px; font-variant-numeric: tabular-nums; }
@@ -149,10 +169,15 @@ a:hover { color: #5eead4; }
 
 h1 {
   color: #fff;
-  font-size: 1.9rem;
+  font-size: 2.15rem;
   font-weight: 800;
-  letter-spacing: -0.025em;
-  margin: 4px 0 20px;
+  letter-spacing: -0.03em;
+  margin: 4px 0 18px;
+}
+.page-sub {
+  color: var(--muted);
+  font-size: 0.98rem;
+  margin: -12px 0 26px;
 }
 h2 {
   margin: 0 0 14px;
@@ -169,8 +194,8 @@ h2 {
   background: linear-gradient(180deg, var(--surface-2), var(--surface));
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 22px 24px;
-  margin-bottom: 20px;
+  padding: 24px 26px;
+  margin-bottom: 22px;
   box-shadow: var(--shadow);
 }
 

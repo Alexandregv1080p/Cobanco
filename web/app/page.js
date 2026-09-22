@@ -52,6 +52,9 @@ export default function DashboardPage() {
   return (
     <>
       <h1>Olá, {user?.nome || "bem-vindo"}</h1>
+      <p className="page-sub">
+        {isAdmin ? "Visão geral do banco em tempo real." : "Suas contas e simulações num só lugar."}
+      </p>
 
       <div className="stats">
         {isAdmin ? (
