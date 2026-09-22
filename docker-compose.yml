@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: banco
       POSTGRES_PASSWORD: banco
     ports:
-      - "5433:5432"   # 5432 costuma estar ocupado no host; internamente a API usa db:5432
+      - "5434:5432"   # 5433 ocupado por outro projeto (mes-db); internamente a API usa db:5432
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

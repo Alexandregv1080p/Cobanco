@@ -87,9 +87,9 @@ Serviços:
 |---------|-----|
 | Front (Next.js) | http://localhost:3000 |
 | API (Spring Boot) | http://localhost:8080 |
-| PostgreSQL | localhost:**5433** (host) → 5432 (interno) |
+| PostgreSQL | localhost:**5434** (host) → 5432 (interno) |
 
-> A porta do Postgres é **5433 no host** de propósito (5432 costuma estar ocupado).
+> A porta do Postgres é **5434 no host** de propósito (5432/5433 costumam estar ocupados).
 > Internamente a API acessa `db:5432`.
 
 Parar: `docker compose down` (mantém os dados). Zerar o banco: `docker compose down -v`.
