@@ -22,6 +22,7 @@ RUN cobc -x -free -o /usr/local/bin/amortizacao /opt/cobol/src/amortizacao.cob \
  && cobc -x -free -o /usr/local/bin/transacoes  /opt/cobol/src/transacoes.cob /opt/cobol/src/transacaocore.cob \
  && cobc -x -free -o /usr/local/bin/investimento /opt/cobol/src/investimento.cob \
  && cobc -x -free -o /usr/local/bin/fechamento  /opt/cobol/src/fechamento.cob \
+ && cobc -x -free -o /usr/local/bin/credito     /opt/cobol/src/credito.cob \
  && cobc -b -free -o /usr/local/lib/libtransacaoffi.so /opt/cobol/ffi/bridge.c /opt/cobol/src/transacaocore.cob \
  && ldconfig
 

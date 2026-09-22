@@ -88,6 +88,29 @@ public class CobolGateway {
         return res;
     }
 
+    // ---- Analise de credito: score + decisao ----
+    public ResultadoCredito analisarCredito(BigDecimal renda, BigDecimal valor,
+                                            int prazo, BigDecimal saldoMedio) {
+        String entrada = String.join(";",
+                plain(renda), plain(valor), String.valueOf(prazo), plain(saldoMedio));
+
+        List<String> saida = executar("credito", entrada);
+
+        // 1a linha: RESUMO;score;decisao;faixa;taxa;limite;comprom;parcela;capacidade
+        String[] r = saida.get(0).split(";");
+        List<FatorScore> fatores = new ArrayList<>();
+        for (String linha : saida.subList(1, saida.size())) {
+            String[] f = linha.split(";");          // FATOR;nome;pontos
+            if ("FATOR".equals(f[0])) {
+                fatores.add(new FatorScore(f[1], Integer.parseInt(f[2])));
+            }
+        }
+        return new ResultadoCredito(
+                Integer.parseInt(r[1]), r[2], r[3],
+                new BigDecimal(r[4]), new BigDecimal(r[5]), new BigDecimal(r[6]),
+                new BigDecimal(r[7]), new BigDecimal(r[8]), fatores);
+    }
+
     // ---- Transacoes (caminho quente: subprocesso OU FFI in-process) ----
     public BigDecimal deposito(BigDecimal saldo, BigDecimal valor) {
         return saldoDe(processarTransacao(
