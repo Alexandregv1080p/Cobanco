@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, brl } from "../lib/api";
 import { useRequireAuth, getUser } from "../lib/auth";
+import ModalFechamento from "./ModalFechamento";
 
 export default function DashboardPage() {
   useRequireAuth();
@@ -11,6 +12,7 @@ export default function DashboardPage() {
   const [contas, setContas] = useState([]);
   const [balancete, setBalancete] = useState(null);
   const [fech, setFech] = useState(null);
+  const [modalFech, setModalFech] = useState(false);
   const [erro, setErro] = useState("");
 
   const isAdmin = user?.papel === "ADMIN";
@@ -31,14 +33,9 @@ export default function DashboardPage() {
     recarregar(u);
   }, []);
 
-  async function rodarFechamento() {
-    setErro("");
-    try {
-      setFech(await api.fechamento());
-      await recarregar(user);
-    } catch (e) {
-      setErro(e.message);
-    }
+  async function aoConcluirFechamento(r) {
+    setFech(r);
+    await recarregar(user);
   }
 
   const saldoTotal = contas.reduce((s, c) => s + Number(c.saldo), 0);
@@ -129,7 +126,8 @@ export default function DashboardPage() {
           <p className="muted">
             Cobra juros de cheque especial nas contas negativas e reconcilia saldo × razão.
           </p>
-          <button onClick={rodarFechamento}>Rodar fechamento agora</button>
+          <button onClick={() => setModalFech(true)}>Rodar fechamento agora</button>
+          <ModalFechamento open={modalFech} onClose={() => setModalFech(false)} onDone={aoConcluirFechamento} />
           {fech && (
             <p className="ok">
               {fech.contasProcessadas} contas · juros {brl(fech.totalJuros)} ·{" "}

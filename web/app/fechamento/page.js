@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api, brl } from "../../lib/api";
 import { useRequireAuth } from "../../lib/auth";
 import { getUser } from "../../lib/auth";
+import ModalFechamento from "../ModalFechamento";
 
 // Ícone "lua" — o batch é a rotina noturna
 const IcoLua = () => (
@@ -16,25 +17,15 @@ const IcoLua = () => (
 export default function FechamentoPage() {
   useRequireAuth();
   const [admin, setAdmin] = useState(false);
-  const [rodando, setRodando] = useState(false);
+  const [modal, setModal] = useState(false);
   const [res, setRes] = useState(null);
-  const [erro, setErro] = useState("");
   const [historico, setHistorico] = useState([]); // corridas desta sessão
 
   useEffect(() => { setAdmin(getUser()?.papel === "ADMIN"); }, []);
 
-  async function rodar() {
-    setErro("");
-    setRodando(true);
-    try {
-      const r = await api.fechamento();
-      setRes(r);
-      setHistorico((h) => [{ quando: new Date(), ...r }, ...h].slice(0, 10));
-    } catch (e) {
-      setErro(e.message);
-    } finally {
-      setRodando(false);
-    }
+  function aoConcluir(r) {
+    setRes(r);
+    setHistorico((h) => [{ quando: new Date(), ...r }, ...h].slice(0, 10));
   }
 
   const linhas       = res?.linhas || [];
@@ -63,8 +54,8 @@ export default function FechamentoPage() {
               Dispara o batch sob demanda (o agendado roda à meia-noite). Cobra juros e posta no razão em partidas dobradas.
             </div>
           </div>
-          <button onClick={rodar} disabled={rodando || !admin} style={{ margin: 0, minWidth: 180 }}>
-            {rodando ? "Processando…" : "Rodar fechamento"}
+          <button onClick={() => setModal(true)} disabled={!admin} style={{ margin: 0, minWidth: 180 }}>
+            Rodar fechamento
           </button>
         </div>
         {!admin && (
@@ -72,8 +63,9 @@ export default function FechamentoPage() {
             ⚠️ Apenas o perfil <strong>ADMIN</strong> pode disparar o fechamento. Faça login como administrador.
           </div>
         )}
-        {erro && <div className="erro" style={{ marginTop: 12 }}>{erro}</div>}
       </div>
+
+      <ModalFechamento open={modal} onClose={() => setModal(false)} onDone={aoConcluir} />
 
       {res && (
         <>
