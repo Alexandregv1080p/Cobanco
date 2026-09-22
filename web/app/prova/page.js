@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { api, brl } from "../../lib/api";
 import { useRequireAuth } from "../../lib/auth";
+import CampoMoeda from "../CampoMoeda";
+import { taxaValida } from "../../lib/validacao";
 
 // Reimplementação INGÊNUA em ponto flutuante (IEEE-754 double, o `number` do JS)
 // da MESMA fórmula do AMORTIZACAO.COB — porém sem a disciplina decimal (nada de
@@ -53,7 +55,12 @@ export default function ProvaPage() {
 
   async function rodar(e) {
     e.preventDefault();
-    setErro(""); setCobol(null); setFlt(null); setCarregando(true);
+    setErro("");
+    if (!(Number(form.valor) > 0)) { setErro("informe um valor maior que zero"); return; }
+    if (!taxaValida(form.taxaMensal)) { setErro("taxa mensal deve ser fração entre 0 e 1 (ex.: 0.0189)"); return; }
+    const p = Number(form.prazoMeses);
+    if (!Number.isInteger(p) || p < 1 || p > 360) { setErro("prazo deve ser de 1 a 360 meses"); return; }
+    setCobol(null); setFlt(null); setCarregando(true);
     const args = {
       valor: Number(form.valor), taxaMensal: Number(form.taxaMensal),
       prazoMeses: Number(form.prazoMeses), sistema: form.sistema,
@@ -102,13 +109,15 @@ export default function ProvaPage() {
           <div className="row">
             <div>
               <label>Valor do empréstimo</label>
-              <input type="number" step="0.01" value={form.valor}
-                onChange={(e) => setForm({ ...form, valor: e.target.value })} required />
+              <CampoMoeda value={form.valor} onChange={(v) => setForm({ ...form, valor: v })} />
             </div>
             <div>
               <label>Taxa mensal (fração, ex.: 0.0189 = 1,89%)</label>
-              <input type="number" step="0.0001" value={form.taxaMensal}
+              <input type="number" step="0.0001" min="0" max="1" value={form.taxaMensal}
                 onChange={(e) => setForm({ ...form, taxaMensal: e.target.value })} required />
+              {form.taxaMensal !== "" && !taxaValida(form.taxaMensal) && (
+                <span className="campo-erro">taxa deve ser fração entre 0 e 1</span>
+              )}
             </div>
           </div>
           <div className="row">

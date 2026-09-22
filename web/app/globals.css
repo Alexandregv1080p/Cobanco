@@ -303,6 +303,7 @@ tbody tr:last-child td { border-bottom: none; }
 .saldo.negativo { color: var(--neg); }
 .erro { color: #fecaca; background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.25); padding: 9px 12px; border-radius: 9px; margin-top: 12px; font-size: 0.9em; }
 .ok { color: #bbf7d0; margin-top: 12px; font-size: 0.92em; }
+.campo-erro { display: block; color: var(--neg); font-size: 0.76rem; margin-top: 5px; }
 .tag {
   font-size: 0.7rem;
   font-weight: 700;
