@@ -5,6 +5,7 @@ import Link from "next/link";
 import { api, brl } from "../lib/api";
 import { useRequireAuth, getUser } from "../lib/auth";
 import ModalFechamento from "./ModalFechamento";
+import HomeCliente from "./HomeCliente";
 
 export default function DashboardPage() {
   useRequireAuth();
@@ -45,6 +46,9 @@ export default function DashboardPage() {
     .sort((a, b) => Math.abs(Number(b.saldo)) - Math.abs(Number(a.saldo)))
     .slice(0, 8);
   const maxAbs = Math.max(1, ...topContas.map((c) => Math.abs(Number(c.saldo))));
+
+  // Cliente vê a home de banco; admin mantém o painel analítico.
+  if (user && !isAdmin) return <HomeCliente user={user} contas={contas} />;
 
   return (
     <>

@@ -58,9 +58,9 @@ const ITENS = [
   { href: "/credito", key: "credito", label: "Crédito" },
   { href: "/investimentos", key: "investimento", label: "Investimento" },
   { href: "/comparar", key: "comparar", label: "Comparar" },
-  { href: "/fechamento", key: "fechamento", label: "Fechamento" },
-  { href: "/prova", key: "prova", label: "Prova de Exatidão" },
-  { href: "/contabil", key: "contabil", label: "Contábil" },
+  { href: "/fechamento", key: "fechamento", label: "Fechamento", adminOnly: true },
+  { href: "/prova", key: "prova", label: "Prova de Exatidão", adminOnly: true },
+  { href: "/contabil", key: "contabil", label: "Contábil", adminOnly: true },
   { href: "/perfil", key: "perfil", label: "Perfil" },
 ];
 
@@ -83,7 +83,7 @@ export default function Sidebar() {
         </div>
       </div>
       <div className="demo-chip">Ambiente de demonstração</div>
-      {ITENS.map((it) => (
+      {ITENS.filter((it) => !it.adminOnly || user?.papel === "ADMIN").map((it) => (
         <Link key={it.href} href={it.href} className={active(it.href) ? "active" : ""}>
           <span className="ic">{icones[it.key]}</span> {it.label}
         </Link>

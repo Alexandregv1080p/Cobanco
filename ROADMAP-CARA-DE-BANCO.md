@@ -40,7 +40,7 @@ Estes três, juntos, mudam a percepção sem tocar no núcleo COBOL.
 
 ## Próximos (maior salto, mais trabalho)
 
-### [ ] 4. Home de cliente (separada do painel admin)
+### [x] 4. Home de cliente ✅ FEITO
 - **O que:** home do correntista — saudação, saldo com olho, **ações rápidas circulares**
   (Pix, Transferir, Pagar, Extrato), "meu cartão", últimas 5 transações.
 - **Por que:** é a mudança que mais tira o ar de dashboard — vira "app de banco".
