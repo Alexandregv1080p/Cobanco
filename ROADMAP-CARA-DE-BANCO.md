@@ -28,7 +28,7 @@ Estes três, juntos, mudam a percepção sem tocar no núcleo COBOL.
 - **Notas:** evoluir a tela de sucesso do `ModalPagamento`/`ModalFechamento`; "baixar" via
   `html-to-image`/print, ou um layout de recibo em CSS pronto pra screenshot.
 
-### [ ] 3. Extrato em timeline por dia
+### [x] 3. Extrato em timeline por dia  ✅ FEITO — tríade completa
 - **O que:** trocar a tabela por um **feed agrupado por data**, com ícone por tipo
   (Pix ↑/↓, saque, depósito, juros), descrição e **saldo do dia**.
 - **Por que:** mata direto a "cara de tabela SaaS"; é o extrato que Nubank/Itaú usam.
