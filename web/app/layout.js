@@ -1,6 +1,7 @@
 import "react-phone-number-input/style.css";
 import "./globals.css";
 import Sidebar from "./Sidebar";
+import Notificacoes from "./Notificacoes";
 
 export const metadata = {
   title: "Core Bancário COBOL",
@@ -11,6 +12,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
       <body>
+        <Notificacoes />
         <div className="app">
           <Sidebar />
           <main className="content">

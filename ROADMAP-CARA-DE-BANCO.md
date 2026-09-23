@@ -55,7 +55,7 @@ Estes três, juntos, mudam a percepção sem tocar no núcleo COBOL.
 - **Backend:** tabela de chaves Pix (nova) ou versão simulada no front.
 - **Notas:** QR via lib `qrcode`; "copia e cola" = string BR Code fake.
 
-### [ ] 6. Central de notificações (sino)
+### [x] 6. Central de notificacoes (sino) ✅ FEITO
 - **O que:** sino no topo com badge — "Você recebeu um Pix de R$…", "Fechamento concluído",
   "Juros cobrados".
 - **Por que:** sino com contador é padrão de app bancário.
