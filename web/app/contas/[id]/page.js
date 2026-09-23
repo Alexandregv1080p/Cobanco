@@ -91,8 +91,93 @@ function LinhaResumo({ label, valor, destaque }) {
   );
 }
 
+// ─── Comprovante (protocolo + baixar/compartilhar) ────────────────────────────
+function gerarProtocolo() {
+  const d = new Date();
+  const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+  return `CB.${ymd}.${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+}
+
+function Comprovante({ titulo, linhas }) {
+  const meta = useRef(null);
+  if (!meta.current) meta.current = { protocolo: gerarProtocolo(), quando: new Date() };
+  const { protocolo, quando } = meta.current;
+  const todas = [
+    ...linhas.filter(Boolean),
+    ["Data", quando.toLocaleString("pt-BR")],
+    ["Protocolo", protocolo],
+  ];
+
+  function desenhar() {
+    const W = 680, pad = 36, rowH = 46;
+    const H = 150 + todas.length * rowH + 40;
+    const c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    const g = c.getContext("2d");
+    g.fillStyle = "#0b1416"; g.fillRect(0, 0, W, H);
+    g.fillStyle = "#2dd4bf"; g.fillRect(0, 0, W, 6);
+    g.fillStyle = "#eafffb"; g.font = "700 28px system-ui,Segoe UI,Arial"; g.fillText("Cobanco", pad, 62);
+    g.fillStyle = "#7f9a94"; g.font = "500 16px system-ui,Segoe UI,Arial"; g.fillText(titulo, pad, 90);
+    g.strokeStyle = "#1c2a2b"; g.beginPath(); g.moveTo(pad, 114); g.lineTo(W - pad, 114); g.stroke();
+    let y = 152;
+    todas.forEach(([k, v]) => {
+      g.textAlign = "left"; g.fillStyle = "#7f9a94"; g.font = "15px system-ui,Segoe UI,Arial"; g.fillText(k, pad, y);
+      g.textAlign = "right"; g.fillStyle = "#eafffb"; g.font = "600 16px system-ui,Segoe UI,Arial"; g.fillText(String(v), W - pad, y);
+      y += rowH;
+    });
+    g.textAlign = "left"; g.fillStyle = "#54706b"; g.font = "13px system-ui,Segoe UI,Arial";
+    g.fillText("Comprovante gerado no ambiente de demonstração Cobanco.", pad, H - 22);
+    return c;
+  }
+  const blobPng = () => new Promise((res) => desenhar().toBlob(res, "image/png"));
+
+  async function baixar() {
+    const b = await blobPng();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = `comprovante-${protocolo}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  async function compartilhar() {
+    try {
+      const b = await blobPng();
+      const f = new File([b], `comprovante-${protocolo}.png`, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [f] })) {
+        await navigator.share({ files: [f], title: "Comprovante Cobanco" });
+        return;
+      }
+    } catch (_) { /* cai no download */ }
+    baixar();
+  }
+
+  return (
+    <div className="cmp">
+      <div className="cmp-ico">✓</div>
+      <h3 className="cmp-titulo">{titulo}</h3>
+      <div className="mpag-resumo cmp-rows">
+        {todas.map(([k, v], i) => <LinhaResumo key={i} label={k} valor={v} />)}
+      </div>
+      <div className="cmp-acoes">
+        <button type="button" className="mpag-btn-sec" onClick={baixar}>Baixar</button>
+        <button type="button" className="mpag-btn-sec" onClick={compartilhar}>Compartilhar</button>
+      </div>
+      <style>{`
+        .cmp { text-align: center; }
+        .cmp-ico { width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 12px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 1.6rem; font-weight: 800; color: #062a26; background: var(--primary-2); }
+        .cmp-titulo { margin: 0 0 16px; color: #fff; font-size: 1.2rem; }
+        .cmp-rows { text-align: left; }
+        .cmp-acoes { display: flex; gap: 10px; margin-top: 16px; }
+        .cmp-acoes button { flex: 1; margin: 0; }
+      `}</style>
+    </div>
+  );
+}
+
 // ─── Modal de pagamento (multi-etapa) ─────────────────────────────────────────
-function ModalPagamento({ aberto, onFechar, onConfirmar, titulo, valor, saldoAtual, saldoApos, tipo, carregando, aviso }) {
+function ModalPagamento({ aberto, onFechar, onConfirmar, titulo, valor, saldoAtual, saldoApos, tipo, carregando, aviso, contaLabel }) {
   const [etapa, setEtapa] = useState("metodo");
   const [metodo, setMetodo] = useState(null);
   const [cartao, setCartao] = useState({ numero:"", nome:"", validade:"", cvv:"" });
@@ -459,21 +544,20 @@ function ModalPagamento({ aberto, onFechar, onConfirmar, titulo, valor, saldoAtu
             </>
           )}
 
-          {/* ════ ETAPA 4 — Sucesso ════ */}
+          {/* ════ ETAPA 4 — Sucesso (comprovante) ════ */}
           {etapa === "sucesso" && (
             <div className="mpag-sucesso">
-              <div className="mpag-sucesso-ico">✓</div>
-              <h3 className="mpag-sucesso-titulo">{eDeposito ? "Depósito realizado!" : "Saque realizado!"}</h3>
-              <p className="mpag-sucesso-desc">
-                {brl(valor)} {eDeposito ? "creditado" : "debitado"} com sucesso via <strong>{labelMetodo(metodo)}</strong>.
-              </p>
-              <div className="mpag-sucesso-saldo">
-                Novo saldo:{" "}
-                <span style={{ color: Number(saldoApos) < 0 ? "var(--neg)" : "var(--pos)", fontWeight:700 }}>
-                  {brl(saldoApos)}
-                </span>
-              </div>
-              <button className="mpag-btn-pri" style={{ marginTop: 24 }} onClick={onFechar}>
+              <Comprovante
+                titulo={eDeposito ? "Depósito realizado" : "Saque realizado"}
+                linhas={[
+                  ["Tipo", eDeposito ? "Depósito" : "Saque"],
+                  ["Método", labelMetodo(metodo)],
+                  contaLabel && ["Conta", contaLabel],
+                  ["Valor", brl(valor)],
+                  ["Novo saldo", brl(saldoApos)],
+                ]}
+              />
+              <button className="mpag-btn-pri" style={{ marginTop: 16 }} onClick={onFechar}>
                 Fechar
               </button>
             </div>
@@ -1065,6 +1149,7 @@ export default function ContaDetalhePage() {
         saldoApos={Number(conta.saldo) + Number(dep || 0)}
         tipo="deposito"
         carregando={carregando}
+        contaLabel={`${conta.numero} — ${t.nome}`}
       />
 
       <ModalPagamento
@@ -1082,6 +1167,7 @@ export default function ContaDetalhePage() {
         carregando={carregando}
         aviso={Number(conta.saldo) - Number(saq || 0) < 0
           ? "⚠️ Esta operação utilizará o limite do cheque especial." : null}
+        contaLabel={`${conta.numero} — ${t.nome}`}
       />
 
       <ModalSimples
@@ -1095,23 +1181,18 @@ export default function ContaDetalhePage() {
         titulo="Confirmar transferência"
         labelConfirmar={"Transferir via " + (transf.metodo === "PIX" ? "Pix" : "TED")}
         sucesso={
-          <div>
-            <div style={{ textAlign:"center", marginBottom:16 }}>
-              <div className="mpag-sucesso-ico" style={{ margin:"0 auto 14px" }}>✓</div>
-              <h3 style={{ margin:"0 0 4px", color:"#fff", fontSize:"1.2rem" }}>Transferência realizada!</h3>
-              <p className="muted" style={{ margin:0 }}>
-                {brl(transf.valor)} enviado via <strong style={{ color:"var(--text)" }}>{transf.metodo === "PIX" ? "Pix" : "TED"}</strong>
-              </p>
-            </div>
-            <div className="mpag-resumo">
-              <LinhaResumo label="De"    valor={conta.numero} />
-              <LinhaResumo label="Para"  valor={ctDest ? `${ctDest.numero} — ${ctDest.clienteNome}` : "—"} />
-              <LinhaResumo label="Canal" valor={transf.metodo === "PIX" ? "Pix" : "TED"} />
-              {transf.descricao && <LinhaResumo label="Descrição" valor={transf.descricao} />}
-              <LinhaResumo label="Valor" valor={brl(transf.valor)} destaque />
-              <LinhaResumo label="Data"  valor={new Date().toLocaleString("pt-BR")} />
-            </div>
-          </div>
+          <Comprovante
+            titulo="Transferência enviada"
+            linhas={[
+              ["Tipo", "Transferência"],
+              ["Canal", transf.metodo === "PIX" ? "Pix" : "TED"],
+              ["De", conta.numero],
+              ["Para", ctDest ? `${ctDest.numero} — ${ctDest.clienteNome}` : "—"],
+              transf.descricao && ["Descrição", transf.descricao],
+              ["Valor", brl(transf.valor)],
+              ["Saldo após", brl(Number(conta.saldo) - Number(transf.valor))],
+            ]}
+          />
         }
       >
         <div style={{ textAlign:"center", marginBottom:16 }}>

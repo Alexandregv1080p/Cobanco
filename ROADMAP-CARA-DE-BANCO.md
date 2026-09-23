@@ -11,7 +11,7 @@ Ranqueado por **impacto × esforço**. Marque conforme for entregando.
 
 Estes três, juntos, mudam a percepção sem tocar no núcleo COBOL.
 
-### [ ] 1. Cartão virtual  ⭐ começar por aqui
+### [x] 1. Cartão virtual  ✅ FEITO (commit c62b413)
 - **O que:** arte de cartão (frente) na conta/home — número mascarado (`•••• •••• •••• 1234`),
   bandeira, titular, validade; botões **"mostrar dados"** e **"congelar cartão"** (toggle visual).
 - **Por que:** ícone visual nº1 de banco/fintech; nenhum SaaS tem cartão.
@@ -19,7 +19,7 @@ Estes três, juntos, mudam a percepção sem tocar no núcleo COBOL.
 - **Backend:** não precisa. Derivar número fake determinístico do id da conta.
 - **Notas:** componente `CartaoVirtual.js`; gradiente + chip SVG; "congelar" só muda estilo/estado.
 
-### [ ] 2. Comprovante com protocolo
+### [x] 2. Comprovante com protocolo  ✅ FEITO
 - **O que:** após Pix/TED/transferência, recibo formal com **nº de protocolo/autenticação**,
   data-hora, pagador → recebedor, valor, tipo; botões **"baixar"** e **"compartilhar"**.
 - **Por que:** todo banco emite comprovante; é o print que as pessoas guardam.
