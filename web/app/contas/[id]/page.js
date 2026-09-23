@@ -8,6 +8,7 @@ import LineChart from "../../LineChart";
 import CampoMoeda from "../../CampoMoeda";
 import CartaoVirtual from "../../CartaoVirtual";
 import ExtratoTimeline from "../../ExtratoTimeline";
+import Cofrinhos from "../../Cofrinhos";
 
 // ─── Ícones SVG ───────────────────────────────────────────────────────────────
 const IcoCartao = () => (
@@ -972,6 +973,12 @@ export default function ContaDetalhePage() {
       <div className="card">
         <h2>Cartão virtual</h2>
         <CartaoVirtual seed={conta.numero} titular={t.nome} />
+      </div>
+
+      {/* Cofrinhos */}
+      <div className="card">
+        <h2>Cofrinhos</h2>
+        <Cofrinhos contaId={id} onSaldoConta={(s) => setConta({ ...conta, saldo: s })} />
       </div>
 
       {/* Gráfico */}

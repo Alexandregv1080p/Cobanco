@@ -62,7 +62,7 @@ Estes três, juntos, mudam a percepção sem tocar no núcleo COBOL.
 - **Esforço:** médio.
 - **Backend:** derivar do extrato/eventos existentes, ou tabela de notificações.
 
-### [ ] 7. Produto bancário: cofrinhos OU fatura de cartão
+### [x] 7. Cofrinhos (caixinhas) ✅ FEITO
 - **O que:** **cofrinhos/caixinhas** (guardar dinheiro com meta) ou **fatura** com barra de
   limite usado.
 - **Por que:** produtos bancários reais, não features de dashboard.
