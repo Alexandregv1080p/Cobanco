@@ -6,6 +6,7 @@ import { api, brl } from "../../../lib/api";
 import { useRequireAuth } from "../../../lib/auth";
 import LineChart from "../../LineChart";
 import CampoMoeda from "../../CampoMoeda";
+import CartaoVirtual from "../../CartaoVirtual";
 
 // ─── Ícones SVG ───────────────────────────────────────────────────────────────
 const IcoCartao = () => (
@@ -884,6 +885,12 @@ export default function ContaDetalhePage() {
           <div className="muted">Aberta em: <strong>{conta.criadaEm ? new Date(conta.criadaEm).toLocaleDateString("pt-BR") : "—"}</strong></div>
         </div>
         {msg && <div className={msg.tipo}>{msg.texto}</div>}
+      </div>
+
+      {/* Cartão virtual */}
+      <div className="card">
+        <h2>Cartão virtual</h2>
+        <CartaoVirtual seed={conta.numero} titular={t.nome} />
       </div>
 
       {/* Gráfico */}
