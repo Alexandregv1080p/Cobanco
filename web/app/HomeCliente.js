@@ -13,10 +13,10 @@ const ico = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke:
 function acoes(contaId) {
   const base = contaId ? `/contas/${contaId}` : "/contas";
   return [
+    { href: "/pix", label: "Pix", svg: <svg {...ico}><path d="M12 3l3.5 3.5-3.5 3.5-3.5-3.5z" /><path d="M12 14l3.5 3.5-3.5 3.5-3.5-3.5z" /><path d="M4 11l3.5-3.5L11 11l-3.5 3.5z" /><path d="M13 11l3.5-3.5L20 11l-3.5 3.5z" /></svg> },
     { href: base, label: "Transferir", svg: <svg {...ico}><path d="M7 17V7h10" /><path d="M7 7l10 10" /><path d="M17 7l-4 0M17 7l0 4" /></svg> },
     { href: base, label: "Depositar", svg: <svg {...ico}><path d="M12 5v14" /><path d="M19 12l-7 7-7-7" /></svg> },
     { href: base, label: "Extrato", svg: <svg {...ico}><path d="M4 5h16" /><path d="M4 12h16" /><path d="M4 19h10" /></svg> },
-    { href: "/emprestimos", label: "Empréstimo", svg: <svg {...ico}><circle cx="12" cy="12" r="9" /><path d="M12 7v10M9.5 9.5a2.5 2.5 0 0 1 5 0c0 3-5 1.5-5 4.5a2.5 2.5 0 0 0 5 0" /></svg> },
   ];
 }
 

@@ -41,6 +41,9 @@ const icones = {
   comparar: (
     <svg {...S}><path d="M3 3v18h18" /><path d="M7 15l4-6 4 3 5-8" /></svg>
   ),
+  pix: (
+    <svg {...S}><path d="M12 3l4 4-4 4-4-4z" /><path d="M12 13l4 4-4 4-4-4z" /><path d="M3 12l4-4 4 4-4 4z" /><path d="M13 12l4-4 4 4-4 4z" /></svg>
+  ),
 };
 
 const marca = (
@@ -54,6 +57,7 @@ const marca = (
 const ITENS = [
   { href: "/", key: "painel", label: "Painel" },
   { href: "/contas", key: "contas", label: "Contas" },
+  { href: "/pix", key: "pix", label: "Pix" },
   { href: "/emprestimos", key: "emprestimo", label: "Empréstimo" },
   { href: "/credito", key: "credito", label: "Crédito" },
   { href: "/investimentos", key: "investimento", label: "Investimento" },

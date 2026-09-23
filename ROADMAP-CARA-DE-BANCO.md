@@ -47,7 +47,7 @@ Estes três, juntos, mudam a percepção sem tocar no núcleo COBOL.
 - **Esforço:** alto (reorganiza layout; admin mantém o painel analítico atual).
 - **Backend:** reusa tudo; só nova composição de UI por papel (CLIENTE vs ADMIN).
 
-### [ ] 5. Hub Pix
+### [x] 5. Hub Pix ✅ FEITO
 - **O que:** cadastrar **chaves** (CPF/e-mail/telefone/aleatória), **Pix Copia-e-Cola**
   e **QR Code** para receber.
 - **Por que:** Pix é a assinatura do banco brasileiro; impossível confundir com SaaS.
