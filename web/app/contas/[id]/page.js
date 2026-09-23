@@ -777,6 +777,7 @@ export default function ContaDetalhePage() {
   const [modalSaq,    setModalSaq]    = useState(false);
   const [modalTransf, setModalTransf] = useState(false);
   const [carregando,  setCarregando]  = useState(false);
+  const [mostrarSaldo, setMostrarSaldo] = useState(true);
 
   const [erroDep,    setErroDep]    = useState("");
   const [erroSaq,    setErroSaq]    = useState("");
@@ -850,15 +851,34 @@ export default function ContaDetalhePage() {
     <>
       <h1>Conta {conta.numero}</h1>
 
-      {/* Info da conta */}
+      {/* Cabeçalho estilo app de banco */}
       <div className="card">
-        <div className="muted">
-          {t.nome} · {pj ? "Pessoa jurídica" : "Pessoa física"} · {pj ? "CNPJ" : "CPF"}: {t.documento || "—"}
+        <div className="cta-hd">
+          <div className="muted">
+            {t.nome} · {pj ? "Pessoa jurídica" : "Pessoa física"} · {pj ? "CNPJ" : "CPF"}: {t.documento || "—"}
+          </div>
+          <button type="button" className="olho" onClick={() => setMostrarSaldo((v) => !v)}
+                  title={mostrarSaldo ? "Ocultar saldo" : "Mostrar saldo"}>
+            {mostrarSaldo ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 10 8 10 8a18 18 0 0 1-2.16 3.19M6.6 6.6A17.8 17.8 0 0 0 2 12s3 8 10 8a9 9 0 0 0 5.4-1.6" />
+                <path d="M1 1l22 22" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 12s3-8 10-8 10 8 10 8-3 8-10 8-10-8-10-8z" /><circle cx="12" cy="12" r="3" />
+              </svg>
+            )}
+          </button>
         </div>
-        <div className={"saldo" + (negativo ? " negativo" : "")}>{brl(conta.saldo)}</div>
-        <div className="row" style={{ marginTop:12 }}>
+        <div className="cta-ag">Ag. 0001 · Conta {conta.numero}</div>
+        <div className={"saldo" + (negativo ? " negativo" : "")}>
+          {mostrarSaldo ? brl(conta.saldo) : "R$ ••••••"}
+        </div>
+        <div className="muted" style={{ fontSize:"0.76rem", marginTop:2 }}>Saldo atualizado agora</div>
+        <div className="row" style={{ marginTop:14 }}>
           <div className="muted">Limite: <strong>{brl(conta.limite)}</strong></div>
-          <div className="muted">Disponível: <strong>{brl(saldoDisponivel)}</strong></div>
+          <div className="muted">Disponível: <strong>{mostrarSaldo ? brl(saldoDisponivel) : "••••••"}</strong></div>
           <div className="muted">Juros ch. especial: <strong>{pct(conta.taxaChequeEspecial)}/mês</strong></div>
           <div className="muted">Telefone: <strong>{t.telefone || "—"}</strong></div>
           <div className="muted">Aberta em: <strong>{conta.criadaEm ? new Date(conta.criadaEm).toLocaleDateString("pt-BR") : "—"}</strong></div>

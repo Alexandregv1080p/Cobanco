@@ -75,7 +75,14 @@ export default function Sidebar() {
 
   return (
     <aside className="sidebar">
-      <div className="brand"><span className="ic">{marca}</span> Core Bancário</div>
+      <div className="brand">
+        <span className="ic">{marca}</span>
+        <div className="brand-txt">
+          <span className="brand-name">Cobanco</span>
+          <span className="brand-sub">Core bancário · COBOL</span>
+        </div>
+      </div>
+      <div className="demo-chip">Ambiente de demonstração</div>
       {ITENS.map((it) => (
         <Link key={it.href} href={it.href} className={active(it.href) ? "active" : ""}>
           <span className="ic">{icones[it.key]}</span> {it.label}
@@ -89,6 +96,13 @@ export default function Sidebar() {
           <a className="logout" onClick={(e) => { e.preventDefault(); logout(); }}>Sair</a>
         </div>
       )}
+      <div className="secure">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        Conexão segura
+      </div>
     </aside>
   );
 }
