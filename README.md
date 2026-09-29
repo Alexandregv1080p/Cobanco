@@ -16,6 +16,33 @@ persistência e interface.
 
 ---
 
+## 🎯 Destaques em COBOL (o que abrir primeiro)
+
+Todo o código-fonte COBOL fica em [`cobol/src/`](cobol/src). Cada programa foi
+escrito para exercitar uma técnica real da linguagem, não um "hello world":
+
+| Programa | O que resolve | Técnicas de COBOL que exercita |
+|----------|---------------|-------------------------------|
+| [`amortizacao.cob`](cobol/src/amortizacao.cob) | Empréstimo em **Price, SAC e Americano** + **IOF** + **CET** | `COMP-3` (decimal empacotado), `COMPUTE`/`** ` para juros compostos, **CET achado por bisseção** (`PERFORM ... 60 TIMES`), `OCCURS` para guardar as parcelas |
+| [`fechamento.cob`](cobol/src/fechamento.cob) | **Batch noturno** estilo mainframe: cobra juros de cheque especial e reconcilia saldo × razão | Leitura sequencial (`LINE SEQUENTIAL`, `READ ... AT END`), **control totals + trailer**, laço de acumulação |
+| [`credito.cob`](cobol/src/credito.cob) | **Motor de crédito**: score 0–1000 → decisão (aprovado/revisar/negado), faixa de risco e limite | `EVALUATE` (motor de regras), pontuação por fatores, `COMPUTE` para capacidade de crédito |
+| [`investimento.cob`](cobol/src/investimento.cob) | Simula **CDB/Poupança** com **IR regressivo** | Capitalização composta mês a mês, tabela de alíquotas por faixa de dias, arredondamento em centavos |
+| [`transacaocore.cob`](cobol/src/transacaocore.cob) | Núcleo de **depósito/saque/transferência** com validação de saldo e cheque especial | `PROCEDURE DIVISION USING` (`LINKAGE`), sinais em `S9(13)V99`, mesma regra reusada por **subprocesso e via FFI** (ver [`transacoes.cob`](cobol/src/transacoes.cob) + [`cobol/ffi/bridge.c`](cobol/ffi/bridge.c)) |
+
+**Por que decimal empacotado importa:** frações como `0,1` não têm representação
+exata em binário (`0.1 + 0.2 = 0.30000000000000004`). Em ponto flutuante isso vira
+resíduo que, somado por milhões de contratos, quebra a reconciliação contábil. O
+`COMP-3` do COBOL faz a conta **exata em centavos** — a seção "Prova de Exatidão"
+da interface roda o mesmo empréstimo nos dois motores lado a lado para mostrar a
+diferença centavo a centavo.
+
+**Contrato de I/O:** a API fala com o COBOL por **linhas delimitadas por `;`** via
+stdin/stdout (o COBOL calcula, o Java formata) — dinheiro trafega como **string**,
+e nem JS nem Java fazem aritmética de dinheiro. Toda essa fronteira vive isolada
+numa única classe, `CobolGateway`.
+
+---
+
 ## Arquitetura
 
 ```mermaid
