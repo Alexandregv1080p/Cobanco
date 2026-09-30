@@ -1,7 +1,11 @@
+import { Manrope, JetBrains_Mono } from "next/font/google";
 import "react-phone-number-input/style.css";
 import "./globals.css";
 import Sidebar from "./Sidebar";
 import Notificacoes from "./Notificacoes";
+
+const sans = Manrope({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 export const metadata = {
   title: "Core Bancário COBOL",
@@ -10,7 +14,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={`${sans.variable} ${mono.variable}`}>
       <body>
         <Notificacoes />
         <div className="app">

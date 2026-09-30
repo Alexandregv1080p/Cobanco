@@ -23,7 +23,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans), "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
   color: var(--text);
   background:
     radial-gradient(1000px 520px at 12% -10%, rgba(20, 184, 166, 0.10), transparent 60%),
@@ -162,7 +162,7 @@ a:hover { color: #5eead4; }
   border-top-color: var(--primary-2);
 }
 .stat .k { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); font-weight: 700; }
-.stat .v { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.stat .v { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.02em; margin-top: 8px; font-variant-numeric: tabular-nums; font-family: var(--font-mono), var(--font-sans), monospace; }
 .stat .v.pos { color: var(--pos); }
 .stat .v.neg { color: var(--neg); }
 .stat .s { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
@@ -288,7 +288,7 @@ button {
   transition: transform 0.12s, box-shadow 0.15s, filter 0.15s;
 }
 button:hover { filter: brightness(1.06); box-shadow: 0 10px 22px -8px rgba(20, 184, 166, 0.7); }
-button:active { transform: translateY(1px); }
+button:active:not(:disabled) { transform: translateY(1px) scale(0.985); }
 button:disabled { background: #22332e; color: var(--faint); cursor: not-allowed; box-shadow: none; filter: none; }
 
 /* ---------- Tables ---------- */
@@ -315,12 +315,15 @@ tbody tr:last-child td { border-bottom: none; }
 /* ---------- Money & status ---------- */
 .saldo {
   font-size: 2.3rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--pos);
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono), var(--font-sans), monospace;
   margin: 2px 0;
 }
+/* valores monetários com precisão "de terminal" */
+.cof-total, .hc-conta-saldo, .tl-valor { font-family: var(--font-mono), var(--font-sans), monospace; }
 .cta-hd { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .cta-ag {
   color: var(--faint); font-size: 0.74rem; font-weight: 700; letter-spacing: 0.05em;
@@ -481,4 +484,24 @@ tbody tr:last-child td { border-bottom: none; }
 .auth label:first-of-type { margin-top: 0; }
 @media (max-width: 520px) {
   .auth h1 { font-size: 2rem; }
+}
+
+/* ---------- Camada de motion (entrada suave; respeita reduced-motion) ---------- */
+@keyframes cb-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* blocos de topo de cada página entram em cascata */
+  .container > * { animation: cb-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .container > *:nth-child(2) { animation-delay: 0.05s; }
+  .container > *:nth-child(3) { animation-delay: 0.10s; }
+  .container > *:nth-child(4) { animation-delay: 0.15s; }
+  .container > *:nth-child(5) { animation-delay: 0.20s; }
+  /* nas telas de auth a cascata é dos filhos do hero (chip/título/sub/card) */
+  .container > .auth { animation: none; }
+  .auth > * { animation: cb-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .auth > *:nth-child(2) { animation-delay: 0.06s; }
+  .auth > *:nth-child(3) { animation-delay: 0.12s; }
+  .auth > *:nth-child(4) { animation-delay: 0.18s; }
 }
