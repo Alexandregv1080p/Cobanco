@@ -2,21 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { QrCode, ArrowsLeftRight, ArrowLineDown, Receipt } from "@phosphor-icons/react";
 import { api, brl } from "../lib/api";
 import CartaoVirtual from "./CartaoVirtual";
 import ExtratoTimeline from "./ExtratoTimeline";
 
-const ico = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor",
-  strokeWidth: 1.9, strokeLinecap: "round", strokeLinejoin: "round" };
+const IC = { size: 20, weight: "regular" };
 
 // ações rápidas circulares (estilo app de banco)
 function acoes(contaId) {
   const base = contaId ? `/contas/${contaId}` : "/contas";
   return [
-    { href: "/pix", label: "Pix", svg: <svg {...ico}><path d="M12 3l3.5 3.5-3.5 3.5-3.5-3.5z" /><path d="M12 14l3.5 3.5-3.5 3.5-3.5-3.5z" /><path d="M4 11l3.5-3.5L11 11l-3.5 3.5z" /><path d="M13 11l3.5-3.5L20 11l-3.5 3.5z" /></svg> },
-    { href: base, label: "Transferir", svg: <svg {...ico}><path d="M7 17V7h10" /><path d="M7 7l10 10" /><path d="M17 7l-4 0M17 7l0 4" /></svg> },
-    { href: base, label: "Depositar", svg: <svg {...ico}><path d="M12 5v14" /><path d="M19 12l-7 7-7-7" /></svg> },
-    { href: base, label: "Extrato", svg: <svg {...ico}><path d="M4 5h16" /><path d="M4 12h16" /><path d="M4 19h10" /></svg> },
+    { href: "/pix", label: "Pix", svg: <QrCode {...IC} /> },
+    { href: base, label: "Transferir", svg: <ArrowsLeftRight {...IC} /> },
+    { href: base, label: "Depositar", svg: <ArrowLineDown {...IC} /> },
+    { href: base, label: "Extrato", svg: <Receipt {...IC} /> },
   ];
 }
 

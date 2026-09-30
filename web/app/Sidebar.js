@@ -3,56 +3,36 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import {
+  SquaresFour, Wallet, HandCoins, Gauge, TrendUp, ChartBar,
+  Moon, Scales, Books, User, Bank, Lock,
+} from "@phosphor-icons/react";
 import { getUser, logout } from "../lib/auth";
 
-const S = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor",
-  strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" };
+const IC = { size: 18, weight: "regular" };
 
-const icones = {
-  painel: (
-    <svg {...S}><rect x="3" y="3" width="7" height="9" /><rect x="14" y="3" width="7" height="5" />
-      <rect x="14" y="12" width="7" height="9" /><rect x="3" y="16" width="7" height="5" /></svg>
-  ),
-  contas: (
-    <svg {...S}><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18" /><path d="M7 15h4" /></svg>
-  ),
-  emprestimo: (
-    <svg {...S}><path d="M3 7l6 6 4-4 8 8" /><path d="M21 21h-6" /><path d="M21 21v-6" /></svg>
-  ),
-  investimento: (
-    <svg {...S}><path d="M3 17l6-6 4 4 8-8" /><path d="M21 3h-6" /><path d="M21 3v6" /></svg>
-  ),
-  perfil: (
-    <svg {...S}><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
-  ),
-  fechamento: (
-    <svg {...S}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
-  ),
-  prova: (
-    <svg {...S}><path d="M12 3v18" /><path d="M6 8l-3 6a3 3 0 0 0 6 0z" />
-      <path d="M18 8l-3 6a3 3 0 0 0 6 0z" /><path d="M6 8h12" /></svg>
-  ),
-  credito: (
-    <svg {...S}><path d="M22 12A10 10 0 1 1 12 2" /><path d="M12 12l6-4" /><circle cx="12" cy="12" r="1.5" /></svg>
-  ),
-  contabil: (
-    <svg {...S}><path d="M4 4h16v4H4z" /><path d="M6 8v12" /><path d="M12 8v12" /><path d="M18 8v12" /><path d="M4 20h16" /></svg>
-  ),
-  comparar: (
-    <svg {...S}><path d="M3 3v18h18" /><path d="M7 15l4-6 4 3 5-8" /></svg>
-  ),
-  pix: (
-    <svg {...S}><path d="M12 3l4 4-4 4-4-4z" /><path d="M12 13l4 4-4 4-4-4z" /><path d="M3 12l4-4 4 4-4 4z" /><path d="M13 12l4-4 4 4-4 4z" /></svg>
-  ),
-};
-
-const marca = (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
-       strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 10l9-6 9 6" /><path d="M5 10v9" /><path d="M9 10v9" /><path d="M15 10v9" />
-    <path d="M19 10v9" /><path d="M3 21h18" />
+// Glyph do Pix (marca do BCB — mantido como SVG proposital, não há equivalente em lib)
+const PixMark = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3l3.5 3.5-3.5 3.5-3.5-3.5z" /><path d="M12 14l3.5 3.5-3.5 3.5-3.5-3.5z" />
+    <path d="M4 11l3.5-3.5L11 11l-3.5 3.5z" /><path d="M13 11l3.5-3.5L20 11l-3.5 3.5z" />
   </svg>
 );
+
+const icones = {
+  painel: <SquaresFour {...IC} />,
+  contas: <Wallet {...IC} />,
+  pix: <PixMark />,
+  emprestimo: <HandCoins {...IC} />,
+  credito: <Gauge {...IC} />,
+  investimento: <TrendUp {...IC} />,
+  comparar: <ChartBar {...IC} />,
+  fechamento: <Moon {...IC} />,
+  prova: <Scales {...IC} />,
+  contabil: <Books {...IC} />,
+  perfil: <User {...IC} />,
+};
 
 const ITENS = [
   { href: "/", key: "painel", label: "Painel" },
@@ -80,7 +60,7 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="brand">
-        <span className="ic">{marca}</span>
+        <span className="ic"><Bank size={20} weight="duotone" /></span>
         <div className="brand-txt">
           <span className="brand-name">Cobanco</span>
           <span className="brand-sub">Core bancário · COBOL</span>
@@ -101,11 +81,7 @@ export default function Sidebar() {
         </div>
       )}
       <div className="secure">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-        Conexão segura
+        <Lock size={12} weight="fill" /> Conexão segura
       </div>
     </aside>
   );

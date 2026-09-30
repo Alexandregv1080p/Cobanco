@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Snowflake } from "@phosphor-icons/react";
 
 // Gera N dígitos determinísticos a partir de uma seed (xorshift) — cartão fake e estável.
 function digitos(seed, n) {
@@ -70,7 +71,7 @@ export default function CartaoVirtual({ seed, titular }) {
           </div>
         </div>
 
-        {congelado && <div className="cv-frozen-tag">❄ Cartão congelado</div>}
+        {congelado && <div className="cv-frozen-tag"><Snowflake size={16} weight="fill" /> Cartão congelado</div>}
       </div>
 
       <div className="cv-actions">
@@ -97,7 +98,7 @@ export default function CartaoVirtual({ seed, titular }) {
         }
         .cv-frozen { filter: grayscale(0.85) brightness(0.8); }
         .cv-frozen-tag {
-          position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+          position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px;
           font-weight: 800; letter-spacing: 0.03em; color: #dff6ff;
           background: rgba(8,20,24,0.35); backdrop-filter: blur(1px);
         }

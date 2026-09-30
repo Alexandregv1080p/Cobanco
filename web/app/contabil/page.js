@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Warning } from "@phosphor-icons/react";
 import { api, brl } from "../../lib/api";
 import { useRequireAuth, getUser } from "../../lib/auth";
 
@@ -41,7 +42,10 @@ export default function ContabilPage() {
       <>
         <h1>Painel Contábil</h1>
         <div className="card">
-          <p className="muted">⚠️ Esta área é restrita ao perfil <strong>ADMIN</strong>. Faça login como administrador.</p>
+          <p className="muted" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Warning size={16} weight="fill" style={{ color: "#fbbf24", flexShrink: 0 }} />
+            Esta área é restrita ao perfil <strong>ADMIN</strong>. Faça login como administrador.
+          </p>
         </div>
       </>
     );

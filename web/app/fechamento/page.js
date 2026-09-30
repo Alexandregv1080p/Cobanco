@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Warning } from "@phosphor-icons/react";
 import { api, brl } from "../../lib/api";
 import { useRequireAuth } from "../../lib/auth";
 import { getUser } from "../../lib/auth";
@@ -59,8 +60,9 @@ export default function FechamentoPage() {
           </button>
         </div>
         {!admin && (
-          <div className="muted" style={{ marginTop: 12, fontSize: "0.85rem" }}>
-            ⚠️ Apenas o perfil <strong>ADMIN</strong> pode disparar o fechamento. Faça login como administrador.
+          <div className="muted" style={{ marginTop: 12, fontSize: "0.85rem", display: "flex", alignItems: "center", gap: 8 }}>
+            <Warning size={16} weight="fill" style={{ color: "#fbbf24", flexShrink: 0 }} />
+            Apenas o perfil <strong>ADMIN</strong> pode disparar o fechamento. Faça login como administrador.
           </div>
         )}
       </div>

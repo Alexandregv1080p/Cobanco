@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { Bell, ArrowDown, ArrowUp } from "@phosphor-icons/react";
 import { api, brl } from "../lib/api";
 import { getUser } from "../lib/auth";
 
@@ -64,9 +65,7 @@ export default function Notificacoes() {
   return (
     <div className="nt-wrap">
       <button className="nt-sino" onClick={alternar} aria-label="Notificações">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" />
-        </svg>
+        <Bell size={20} weight="regular" />
         {naoLidas > 0 && <span className="nt-badge">{naoLidas > 9 ? "9+" : naoLidas}</span>}
       </button>
 
@@ -80,7 +79,7 @@ export default function Notificacoes() {
             ) : itens.map((n) => (
               <div key={n.id} className="nt-item">
                 <span className={"nt-ico " + (n.entrada ? "nt-in" : "nt-out")}>
-                  {n.entrada ? "↓" : "↑"}
+                  {n.entrada ? <ArrowDown size={15} weight="bold" /> : <ArrowUp size={15} weight="bold" />}
                 </span>
                 <div className="nt-info">
                   <div className="nt-titulo">{n.titulo}</div>

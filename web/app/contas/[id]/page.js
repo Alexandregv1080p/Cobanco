@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo } from "react";
+import { ArrowLineDown, ArrowLineUp, ArrowsLeftRight, Warning } from "@phosphor-icons/react";
 import { useParams } from "next/navigation";
 import { api, brl } from "../../../lib/api";
 import { useRequireAuth } from "../../../lib/auth";
@@ -492,7 +493,7 @@ function ModalPagamento({ aberto, onFechar, onConfirmar, titulo, valor, saldoAtu
               {/* Dinheiro */}
               {metodo === "dinheiro" && (
                 <div className="mpag-aviso-info">
-                  💵 Dirija-se a uma agência ou caixa eletrônico com documento de identidade para retirar o valor em espécie. O saldo será debitado imediatamente.
+                  Dirija-se a uma agência ou caixa eletrônico com documento de identidade para retirar o valor em espécie. O saldo será debitado imediatamente.
                 </div>
               )}
 
@@ -506,7 +507,7 @@ function ModalPagamento({ aberto, onFechar, onConfirmar, titulo, valor, saldoAtu
           {etapa === "confirmacao" && (
             <>
               <div className={"mpag-conf-ico " + (eDeposito ? "mpag-conf-dep" : "mpag-conf-saq")}>
-                {eDeposito ? "↓" : "↑"}
+                {eDeposito ? <ArrowLineDown size={24} weight="bold" /> : <ArrowLineUp size={24} weight="bold" />}
               </div>
 
               <div className="mpag-resumo">
@@ -992,7 +993,7 @@ export default function ContaDetalhePage() {
       {/* Depósito + Saque */}
       <div className="row">
         <div className="card pg-op-card">
-          <div className="pg-op-ico pg-op-dep">↓</div>
+          <div className="pg-op-ico pg-op-dep"><ArrowLineDown size={22} weight="bold" /></div>
           <h2>Depósito</h2>
           <p className="muted" style={{ fontSize:"0.88rem", margin:"0 0 8px" }}>
             Adicione fundos via cartão, PIX ou boleto.
@@ -1015,7 +1016,7 @@ export default function ContaDetalhePage() {
         </div>
 
         <div className="card pg-op-card">
-          <div className="pg-op-ico pg-op-saq">↑</div>
+          <div className="pg-op-ico pg-op-saq"><ArrowLineUp size={22} weight="bold" /></div>
           <h2>Saque</h2>
           <p className="muted" style={{ fontSize:"0.88rem", margin:"0 0 8px" }}>
             Retire via PIX, conta bancária ou em espécie.
@@ -1042,7 +1043,7 @@ export default function ContaDetalhePage() {
 
       {/* Transferência */}
       <div className="card pg-op-card">
-        <div className="pg-op-ico" style={{ background:"rgba(63,111,176,0.15)", color:"var(--primary-2)" }}>⇄</div>
+        <div className="pg-op-ico" style={{ background:"rgba(63,111,176,0.15)", color:"var(--primary-2)" }}><ArrowsLeftRight size={22} weight="bold" /></div>
         <h2>Transferência</h2>
         <p className="muted" style={{ fontSize:"0.88rem", margin:"0 0 8px" }}>
           Envie para outra conta do banco via Pix (instantâneo) ou TED.
@@ -1152,7 +1153,7 @@ export default function ContaDetalhePage() {
         tipo="saque"
         carregando={carregando}
         aviso={Number(conta.saldo) - Number(saq || 0) < 0
-          ? "⚠️ Esta operação utilizará o limite do cheque especial." : null}
+          ? "Esta operação utilizará o limite do cheque especial." : null}
         contaLabel={`${conta.numero} — ${t.nome}`}
       />
 
@@ -1184,7 +1185,7 @@ export default function ContaDetalhePage() {
         <div style={{ textAlign:"center", marginBottom:16 }}>
           <div style={{ width:52, height:52, borderRadius:16, background:"rgba(63,111,176,0.15)",
                         color:"var(--primary-2)", display:"flex", alignItems:"center", justifyContent:"center",
-                        fontSize:"1.5rem", fontWeight:800, margin:"0 auto 12px" }}>⇄</div>
+                        fontSize:"1.5rem", fontWeight:800, margin:"0 auto 12px" }}><ArrowsLeftRight size={24} weight="bold" /></div>
           <p style={{ color:"var(--muted)", fontSize:"0.9rem", margin:0 }}>Revise os dados antes de confirmar.</p>
         </div>
         <div className="mpag-resumo">
@@ -1198,7 +1199,7 @@ export default function ContaDetalhePage() {
           <LinhaResumo label="Saldo após"    valor={brl(Number(conta.saldo) - Number(transf.valor))} destaque />
         </div>
         {Number(conta.saldo) - Number(transf.valor) < 0 && (
-          <div className="mpag-aviso" style={{ marginTop:12 }}>⚠️ Esta operação utilizará o limite do cheque especial.</div>
+          <div className="mpag-aviso" style={{ marginTop:12, display:"flex", alignItems:"center", gap:8 }}><Warning size={16} weight="fill" style={{ color:"#fbbf24", flexShrink:0 }} /> Esta operação utilizará o limite do cheque especial.</div>
         )}
       </ModalSimples>
 
