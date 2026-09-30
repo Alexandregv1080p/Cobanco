@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { ArrowLineDown, ArrowLineUp, ArrowsLeftRight, Warning } from "@phosphor-icons/react";
 import { useParams } from "next/navigation";
 import { api, brl } from "../../../lib/api";
@@ -210,7 +211,7 @@ function ModalPagamento({ aberto, onFechar, onConfirmar, titulo, valor, saldoAtu
     return () => window.removeEventListener("keydown", esc);
   }, [aberto, carregando, onFechar]);
 
-  if (!aberto) return null;
+  if (!aberto || typeof document === "undefined") return null;
 
   // Métodos disponíveis por operação
   const metodosDeposito = [
@@ -286,7 +287,7 @@ function ModalPagamento({ aberto, onFechar, onConfirmar, titulo, valor, saldoAtu
   const btnConfirmClass = eDeposito ? "mpag-btn-deposito" : "mpag-btn-saque";
   const btnConfirmLabel = carregando ? "Processando…" : (eDeposito ? "Confirmar depósito" : "Confirmar saque");
 
-  return (
+  return createPortal((
     <div className="mpag-overlay" onClick={() => !carregando && onFechar()}>
       <div className="mpag-box" onClick={(e) => e.stopPropagation()}>
 
@@ -792,7 +793,7 @@ function ModalPagamento({ aberto, onFechar, onConfirmar, titulo, valor, saldoAtu
         .mpag-sucesso-saldo  { font-size: 0.9rem; color: var(--muted); }
       `}</style>
     </div>
-  );
+  ), document.body);
 }
 
 // ─── Modal de transferência (review → comprovante) ────────────────────────────
@@ -806,13 +807,13 @@ function ModalSimples({ aberto, onFechar, onConfirmar, carregando, titulo,
     window.addEventListener("keydown", esc);
     return () => window.removeEventListener("keydown", esc);
   }, [aberto, carregando, onFechar]);
-  if (!aberto) return null;
+  if (!aberto || typeof document === "undefined") return null;
 
   async function conf() {
     try { await onConfirmar(); setFase("sucesso"); } catch (_) { /* erro tratado pelo pai */ }
   }
 
-  return (
+  return createPortal((
     <div className="mpag-overlay" onClick={() => !carregando && onFechar()}>
       <div className="mpag-box" onClick={(e) => e.stopPropagation()}>
         <div className="mpag-header">
@@ -839,7 +840,7 @@ function ModalSimples({ aberto, onFechar, onConfirmar, carregando, titulo,
         </div>
       </div>
     </div>
-  );
+  ), document.body);
 }
 
 // ─── Página ───────────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { api, brl } from "../lib/api";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -44,11 +45,13 @@ export default function ModalFechamento({ open, onClose, onDone }) {
     return () => { vivo = false; };
   }, [open]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
   const comJuros = (res?.linhas || []).filter((l) => Number(l.juros) > 0).length;
 
-  return (
+  // Portal no body: o overlay fixed nunca fica preso ao stacking/containing
+  // context de um card ancestral (ex.: durante animações de entrada).
+  return createPortal(
     <div className="mf-overlay" onClick={fase !== "processando" ? onClose : undefined}>
       <div className="mf-box" onClick={(e) => e.stopPropagation()}>
         {fase === "processando" && (
@@ -161,6 +164,7 @@ export default function ModalFechamento({ open, onClose, onDone }) {
 
         .mf-btn { width: 100%; margin-top: 16px; }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 }
